@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Animate.css CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<style>
+    :root {
+        --primary-color: #2c5282; /* softer deep blue for sidebar & buttons */
+        --secondary-color: #4299e1; /* vibrant sky blue for hover & expanded accordion */
+        --accent-color: #48bb78; /* fresh green for positive profit */
+        --negative-color: #f56565; /* softer red for negative profit */
+        --text-color: #2d3748; /* slightly softer dark gray for general text */
+        --sidebar-gradient: linear-gradient(180deg, #2c5282, #3182ce); /* updated gradient for sidebar */
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* slightly stronger shadow for depth */
+        --bg-light: #edf2f7; /* softer light gray background for main content */
+    }
+
+    body {
+        margin: 0;
+        font-family: 'Roboto', sans-serif;
+        display: flex;
+        min-height: 100vh;
+        overflow-x: hidden;
+        background-color: var(--bg-light);
+        color: var(--text-color);
+    }
+
+    #sidebar {
+        width: 250px;
+        background: var(--sidebar-gradient);
+        color: white;
+        padding: 20px;
+        box-sizing: border-box;
+        min-height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        transition: left 0.3s ease;
+        z-index: 1000;
+        box-shadow: var(--shadow);
+    }
+
+    #sidebar h2 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        text-align: center;
+        font-weight: 500;
+        color: #f7fafc;
+    }
+
+    #sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin-top: 0;
+    }
+
+    #sidebar li {
+        margin: 10px 0;
+    }
+
+    #sidebar a {
+        color: white;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        border-radius: 8px;
+        transition: background 0.3s, transform 0.2s;
+    }
+
+    #sidebar a i {
+        margin-right: 10px;
+    }
+
+    #sidebar li:nth-child(odd) a {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    #sidebar li:nth-child(even) a {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    #sidebar a:hover {
+        background-color: var(--secondary-color);
+        transform: translateX(5px);
+    }
+
+    #main {
+        flex: 1;
+        padding: 30px;
+        margin-left: 250px;
+        transition: margin-left 0.3s ease;
+        background-color: var(--bg-light);
+    }
+
+    .accordion-item {
+        border: none;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        box-shadow: var(--shadow);
+        background-color: white;
+    }
+
+    .accordion-button {
+        background-color: white !important;
+        border-radius: 10px !important;
+        color: var(--text-color) !important;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background-color: var(--secondary-color) !important;
+        color: white !important;
+    }
+
+    .profit-positive {
+        color: var(--accent-color);
+        font-weight: 500;
+    }
+
+    .profit-negative {
+        color: var(--negative-color);
+        font-weight: 500;
+    }
+
+    .label-small {
+        font-size: 0.85rem;
+        color: #718096; /* softer gray for labels */
+    }
+
+    .toggle-chart {
+        display: block;
+        margin: 15px auto;
+        width: 50%;
+        background-color: var(--secondary-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .toggle-chart:hover {
+        background-color: var(--primary-color);
+        transform: scale(1.05);
+    }
+
+    #header {
+        display: none;
+        background: var(--sidebar-gradient);
+        color: white;
+        padding: 10px;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1100;
+        text-align: center;
+    }
+
+    #header h2 {
+        margin: 0;
+        flex-grow: 1;
+        font-weight: 500;
+        color: #f7fafc;
+    }
+
+    #hamburger {
+        font-size: 24px;
+        cursor: pointer;
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    @media (max-width: 768px) {
+        #sidebar {
+            left: -100%;
+            width: 100%;
+            top: 50px;
+            min-height: calc(100vh - 50px);
+            padding-top: 10px;
+        }
+
+        #sidebar.active {
+            left: 0;
+        }
+
+        #sidebar h2 {
+            display: none;
+        }
+
+        #main {
+            margin-left: 0;
+            padding-top: 70px;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        #header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #sidebar ul {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            height: 100%;
+            margin: 0;
+        }
+
+        #sidebar li {
+            margin: 0;
+            text-align: center;
+        }
+
+        #sidebar a {
+            font-size: 1.5rem;
+            padding: 15px;
+        }
+
+        .accordion-button .row .col {
+            flex-basis: 50%;
+            max-width: 50%;
+            margin-bottom: 5px;
+        }
+
+        .details-row .col {
+            flex-basis: 50%;
+            max-width: 50%;
+            margin-bottom: 5px;
+        }
+
+        .toggle-chart {
+            width: 100%;
+        }
+    }
+</style>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <!-- Bootstrap JS and Popper.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+</head>
+<body>
+    <header id="header">
+        <span id="hamburger">&#9776;</span>
+        <h2>p◉rtf◉li◉id</h2>
+    </header>
+
+    <div id="sidebar" class="animate__animated animate__fadeInLeft">
+        <h2>p◉rtf◉li◉id</h2>
+        <ul>
+            <li><a href="#" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-shopping-cart"></i> Buy</a></li>
+            <li><a href="#" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-money"></i> Sell</a></li>
+            <li><a href="#" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-history"></i> History</a></li>
+            <li><a href="#" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-sign-out"></i> Logout</a></li>
+        </ul>
+    </div>
+
+    <div id="main" class="animate__animated animate__fadeIn">
+        <h1>Portfolio</h1>
+        <div class="accordion" id="accordionPortfolio">
+            <!-- Stock 1 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading1">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="false" aria-controls="collapse1">
+                        <div class="row w-100">
+                            <div class="col">
+                                <small class="label-small d-block">Stock</small>
+                                AAPL
+                            </div>
+                            <div class="col">
+                                <small class="label-small d-block">Buy Price</small>
+                                $150.00
+                            </div>
+                            <div class="col">
+                                <small class="label-small d-block">Current Price</small>
+                                $180.00
+                            </div>
+                            <div class="col">
+                                <small class="label-small d-block">No of Shares</small>
+                                10
+                            </div>
+                            <div class="col profit-positive">
+                                <small class="label-small d-block">Profit/Loss</small>
+                                $300.00
+                            </div>
+                            <div class="col profit-positive">
+                                <small class="label-small d-block">Percentage</small>
+                                20%
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div id="collapse1" class="accordion-collapse collapse" aria-labelledby="heading1" data-bs-parent="#accordionPortfolio">
+                    <div class="accordion-body">
+                        <div class="animate__animated animate__fadeIn">
+                            <div class="row details-row">
+                                <div class="col">
+                                    <small class="label-small d-block">Buy Date</small>
+                                    2023-01-01
+                                </div>
+                                <div class="col">
+                                    <small class="label-small d-block">Total Invested</small>
+                                    $1500.00
+                                </div>
+                                <div class="col">
+                                    <small class="label-small d-block">Current Value</small>
+                                    $1800.00
+                                </div>
+                            </div>
+                            <button class="btn btn-primary toggle-chart" data-chart-id="1">Show Chart</button>
+                            <div class="chart-container" id="chart-1" style="display: none;">
+                                <canvas id="chartCanvas-1"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stock 2 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading2">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                        <div class="row w-100">
+                            <div class="col">
+                                <small class="label-small d-block">Stock</small>
+                                GOOGL
+                            </div>
+                            <div class="col">
+                                <small class="label-small d-block">Buy Price</small>
+                                $100.00
+                            </div>
+                            <div class="col">
+                                <small class="label-small d-block">Current Price</small>
+                                $90.00
+                            </div>
+                            <div class="col">
+                                <small class="label-small d-block">No of Shares</small>
+                                5
+                            </div>
+                            <div class="col profit-negative">
+                                <small class="label-small d-block">Profit/Loss</small>
+                                -$50.00
+                            </div>
+                            <div class="col profit-negative">
+                                <small class="label-small d-block">Percentage</small>
+                                -10%
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="heading2" data-bs-parent="#accordionPortfolio">
+                    <div class="accordion-body">
+                        <div class="animate__animated animate__fadeIn">
+                            <div class="row details-row">
+                                <div class="col">
+                                    <small class="label-small d-block">Buy Date</small>
+                                    2023-02-15
+                                </div>
+                                <div class="col">
+                                    <small class="label-small d-block">Total Invested</small>
+                                    $500.00
+                                </div>
+                                <div class="col">
+                                    <small class="label-small d-block">Current Value</small>
+                                    $450.00
+                                </div>
+                            </div>
+                            <button class="btn btn-primary toggle-chart" data-chart-id="2">Show Chart</button>
+                            <div class="chart-container" id="chart-2" style="display: none;">
+                                <canvas id="chartCanvas-2"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chart creation with enhanced options
+        function createChart(ctx, labels, data, stockSymbol) {
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `${stockSymbol} Price History`,
+                        data: data,
+                        borderColor: '#003087',
+                        backgroundColor: 'rgba(0, 48, 135, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: '#e0e0e0'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuad'
+                    }
+                }
+            });
+        }
+
+        // Toggle chart visibility
+        function toggleChart(button) {
+            const chartId = button.getAttribute('data-chart-id');
+            const chartContainer = document.getElementById(`chart-${chartId}`);
+            const isHidden = chartContainer.style.display === 'none' || chartContainer.style.display === '';
+            chartContainer.style.display = isHidden ? 'block' : 'none';
+
+            if (isHidden) {
+                chartContainer.classList.add('animate__animated', 'animate__fadeIn');
+                const canvasId = `chartCanvas-${chartId}`;
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                if (!window[`chart${chartId}`]) {
+                    const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May'];
+                    const data = chartId === '1' ? [150, 160, 170, 175, 180] : [100, 95, 92, 88, 90];
+                    const stockSymbol = chartId === '1' ? 'AAPL' : 'GOOGL';
+                    window[`chart${chartId}`] = createChart(ctx, labels, data, stockSymbol);
+                }
+            } else {
+                chartContainer.classList.remove('animate__fadeIn');
+            }
+
+            button.textContent = isHidden ? 'Hide Chart' : 'Show Chart';
+        }
+
+        // Initialize chart buttons
+        document.querySelectorAll('.toggle-chart').forEach(button => {
+            button.addEventListener('click', () => toggleChart(button));
+        });
+
+        // Mobile menu toggle
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const main = document.getElementById('main');
+
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            main.classList.toggle('shifted');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!sidebar.contains(event.target) && !hamburger.contains(event.target)) {
+                sidebar.classList.remove('active');
+                main.classList.remove('shifted');
+            }
+        });
+    </script>
+</body>
+</html>
