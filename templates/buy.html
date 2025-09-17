@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Stock</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Animate.css CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c5282;
+            --secondary-color: #4299e1;
+            --accent-color: #48bb78;
+            --negative-color: #f56565;
+            --text-color: #2d3748;
+            --sidebar-gradient: linear-gradient(180deg, #2c5282, #3182ce);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --bg-light: #edf2f7;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+        }
+
+        #sidebar {
+            width: 250px;
+            background: var(--sidebar-gradient);
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: left 0.3s ease;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        #sidebar h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 500;
+            color: #f7fafc;
+        }
+
+        #sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 0;
+        }
+
+        #sidebar li {
+            margin: 10px 0;
+        }
+
+        #sidebar a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        #sidebar a i {
+            margin-right: 10px;
+        }
+
+        #sidebar li:nth-child(odd) a {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #sidebar li:nth-child(even) a {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        #sidebar a:hover {
+            background-color: var(--secondary-color);
+            transform: translateX(5px);
+        }
+
+        #main {
+            flex: 1;
+            padding: 30px;
+            margin-left: 250px;
+            transition: margin-left 0.3s ease;
+            background-color: var(--bg-light);
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border: none;
+            border-radius: 8px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .error-message {
+            color: var(--negative-color);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .stock-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .stock-table th, .stock-table td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        .stock-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .label-small {
+            font-size: 0.85rem;
+            color: #718096;
+        }
+
+        #header {
+            display: none;
+            background: var(--sidebar-gradient);
+            color: white;
+            padding: 10px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1100;
+            text-align: center;
+        }
+
+        #header h2 {
+            margin: 0;
+            flex-grow: 1;
+            font-weight: 500;
+            color: #f7fafc;
+        }
+
+        #hamburger {
+            font-size: 24px;
+            cursor: pointer;
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        @media (max-width: 768px) {
+            #sidebar {
+                left: -100%;
+                width: 100%;
+                top: 50px;
+                min-height: calc(100vh - 50px);
+                padding-top: 10px;
+            }
+
+            #sidebar.active {
+                left: 0;
+            }
+
+            #sidebar h2 {
+                display: none;
+            }
+
+            #main {
+                margin-left: 0;
+                padding-top: 70px;
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+
+            #header {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #sidebar ul {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-around;
+                height: 100%;
+                margin: 0;
+            }
+
+            #sidebar li {
+                margin: 0;
+                text-align: center;
+            }
+
+            #sidebar a {
+                font-size: 1.5rem;
+                padding: 15px;
+            }
+        }
+    </style>
+    <!-- Bootstrap JS and Popper.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+</head>
+<body>
+    <header id="header">
+        <span id="hamburger">&#9776;</span>
+        <h2>p◉rtf◉li◉id</h2>
+    </header>
+
+    <div id="sidebar" class="animate__animated animate__fadeInLeft">
+        <h2>p◉rtf◉li◉id</h2>
+        <ul>
+            <li><a href="#" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-shopping-cart"></i> Buy</a></li>
+            <li><a href="#" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-money"></i> Sell</a></li>
+            <li><a href="#" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-history"></i> History</a></li>
+            <li><a href="#" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-sign-out"></i> Logout</a></li>
+        </ul>
+    </div>
+
+    <div id="main" class="animate__animated animate__fadeIn">
+        <h1>Buy Stock</h1>
+        <div class="card animate__animated animate__fadeIn">
+            <div id="stock-input-container">
+                <div class="mb-3">
+                    <label for="stock-symbol" class="label-small">Stock Symbol</label>
+                    <input type="text" class="form-control" id="stock-symbol" placeholder="Enter stock symbol (e.g., AAPL)" style="max-width: 300px;">
+                </div>
+                <button id="get-details" class="btn btn-primary">Get Details</button>
+                <div id="error-message" class="error-message"></div>
+            </div>
+
+            <div id="stock-details-container" style="display: none;">
+                <table class="stock-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Exchange</th>
+                            <th>Current Price</th>
+                            <th>Type</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody id="stock-details">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+                <div class="mb-3">
+                    <label for="buy-price" class="label-small">Buy Price</label>
+                    <input type="number" class="form-control" id="buy-price" placeholder="Enter buy price" step="0.01" style="max-width: 300px;">
+                </div>
+                <button id="buy-stock" class="btn btn-primary">Buy</button>
+            </div>
+            <div id="buy-error-message" class="error-message"></div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const main = document.getElementById('main');
+
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            main.classList.toggle('shifted');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!sidebar.contains(event.target) && !hamburger.contains(event.target)) {
+                sidebar.classList.remove('active');
+                main.classList.remove('shifted');
+            }
+        });
+
+        // Handle stock symbol validation and details display
+        const getDetailsButton = document.getElementById('get-details');
+        const stockInputContainer = document.getElementById('stock-input-container');
+        const stockDetailsContainer = document.getElementById('stock-details-container');
+        const errorMessage = document.getElementById('error-message');
+        const stockSymbolInput = document.getElementById('stock-symbol');
+        const buyButton = document.getElementById('buy-stock');
+        const buyPriceInput = document.getElementById('buy-price');
+        const buyerrorMessage = document.getElementById('buy-error-message')
+
+        getDetailsButton.addEventListener('click', async () => {
+            const symbol = stockSymbolInput.value.trim().toUpperCase();
+            if (!symbol) {
+                errorMessage.textContent = 'Please enter a stock symbol';
+                errorMessage.style.display = 'block';
+                errorMessage.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => errorMessage.classList.remove('animate__shakeX'), 1000);
+                return;
+            }
+
+            try {
+                // Mock API call - replace with actual backend endpoint
+                const response = await fetch(`/stock_detail_api/${symbol}`);
+                const data = await response.json();
+
+                if (data.status!="error") {
+                    // Hide input and show details
+                    stockInputContainer.style.display = 'none';
+                    stockDetailsContainer.style.display = 'block';
+                    stockDetailsContainer.classList.add('animate__animated', 'animate__fadeIn');
+
+                    // Populate stock details
+                    const stockDetails = document.getElementById('stock-details');
+                    stockDetails.innerHTML = `
+                        <tr>
+                            <td>${data.meta.symbol}</td>
+                            <td>${data.meta.exchange}</td>
+                            <td>${data.values[0].close}</td>
+                            <td>${data.meta.type}</td>
+                        
+                        </tr>
+                    `;
+                    errorMessage.style.display = 'none';
+                } else {
+                    errorMessage.textContent = data.error || 'Invalid stock symbol';
+                    errorMessage.style.display = 'block';
+                    errorMessage.classList.add('animate__animated', 'animate__shakeX');
+                    setTimeout(() => errorMessage.classList.remove('animate__shakeX'), 1000);
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Error fetching stock details';
+                errorMessage.style.display = 'block';
+                errorMessage.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => errorMessage.classList.remove('animate__shakeX'), 1000);
+            }
+        });
+
+        buyButton.addEventListener('click', async () => {
+            const buyPrice = parseFloat(buyPriceInput.value);
+            if (!buyPrice || buyPrice <= 0) {
+                buyerrorMessage.textContent = 'Please enter a valid buy price';
+                buyerrorMessage.style.display = 'block';
+                buyerrorMessage.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => buyerrorMessage.classList.remove('animate__shakeX'), 1000);
+                return;
+            }
+
+            try {
+                // Mock API call for buying stock - replace with actual backend endpoint
+                const response = await fetch('/api/buy-stock', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        symbol: stockSymbolInput.value.trim().toUpperCase(),
+                        buyPrice
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Stock purchased successfully!');
+                    // Reset form
+                    stockInputContainer.style.display = 'block';
+                    stockDetailsContainer.style.display = 'none';
+                    stockSymbolInput.value = '';
+                    buyPriceInput.value = '';
+                } else {
+                    const data = await response.json();
+                    errorMessage.textContent = data.error || 'Error purchasing stock';
+                    errorMessage.style.display = 'block';
+                    errorMessage.classList.add('animate__animated', 'animate__shakeX');
+                    setTimeout(() => errorMessage.classList.remove('animate__shakeX'), 1000);
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Error processing purchase';
+                errorMessage.style.display = 'block';
+                errorMessage.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => errorMessage.classList.remove('animate__shakeX'), 1000);
+            }
+        });
+    </script>
+</body>
+</html>

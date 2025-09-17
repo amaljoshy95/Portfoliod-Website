@@ -1,8 +1,8 @@
-from flask import Flask,send_file,render_template,redirect,request,session
+from flask import Flask,send_file,render_template,redirect,request,session,url_for,jsonify
 from werkzeug.security import generate_password_hash,check_password_hash
 from dotenv import load_dotenv
 from os import getenv
-from helpers import login_required
+from helpers import login_required,get_stock_data
 
 load_dotenv()
 Flask.secret_key = getenv("FLASK_SECRET_KEY")
@@ -27,6 +27,53 @@ conn.commit()
 def index():
     
     return render_template("index.html")
+
+
+@app.route("/stock_detail_api/<symbol>")
+@login_required
+def stock_detail_api(symbol):
+
+    response = get_stock_data(symbol)
+
+    return jsonify(response)
+
+
+
+@app.route("/buy",methods=["GET","POST"])
+@login_required
+def buy():
+
+    if request.method=="GET":
+        return render_template("buy.html")
+    
+    symbol = request.form.get("stockSymbol")
+    price = request.form.get("price")
+
+    if not symbol:
+        return redirect(url_for("buy",error="Enter a symbol!"))
+
+    response = get_stock_data(symbol)
+    if response["status"]=="error":
+        return redirect(url_for("buy",error="Invalid Symbol!"))
+
+    current_price = response["values"][0]["close"]
+    if not price:
+
+        return redirect(url_for("buy",valid='true',current_price=current_price))
+
+    try:
+        price = int(price)
+    except:
+        return redirect(url_for("buy",error="Enter a valid price!"))
+    
+    if price<=0:
+        return redirect(url_for("buy",error="Enter a valid price!"))
+
+
+
+
+
+
 
 
 
@@ -93,5 +140,5 @@ def signup():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0",debug=True)
 

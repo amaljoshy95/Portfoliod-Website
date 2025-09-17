@@ -1,0 +1,34 @@
+https://api.twelvedata.com/time_series?apikey=cf201df69505469bb23485f699e49368&interval=1day&country=India&exchange=NSE&symbol=INFY&type=stock&outputsize=20&previous_close=true&format=JSON
+
+{
+	"meta": {
+		"symbol": "INFY",
+		"interval": "1day",
+		"currency": "INR",
+		"exchange_timezone": "Asia/Kolkata",
+		"exchange": "NSE",
+		"mic_code": "XNSE",
+		"type": "Common Stock"
+	},
+	"values": [
+		{
+			"datetime": "2025-09-16",
+			"open": "1508.40002",
+			"high": "1514",
+			"low": "1503.5",
+			"close": "1511.30005",
+			"volume": "8921976",
+			"previous_close": "1508.40002"
+		},
+		{
+			"datetime": "2025-09-15",
+			"open": "1525.59998",
+			"high": "1527.5",
+			"low": "1501.19995",
+			"close": "1508.40002",
+			"volume": "6167414",
+			"previous_close": "1525.59998"
+		}],
+	"status": "ok"
+}
+                
