@@ -25,10 +25,15 @@ cur.execute("""CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY NOT NULL
                 hash TEXT NOT NULL)""")
 
 cur.execute("""CREATE TABLE IF NOT EXISTS holdings (id INTEGER PRIMARY KEY NOT NULL, symbol TEXT NOT NULL,
-            shares NUMBER NOT NULL, price FLOAT NOT NULL, date TEXT NOT NULL, user_id INTEGER NOT NULL, 
+            shares NUMBER NOT NULL, price FLOAT, date TEXT, user_id INTEGER NOT NULL, 
+            sellprice FLOAT, selldate TEXT,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)""")
 conn.commit()
 
+# "date" is both buydate and the ref_date for selling. 
+# "price" is the buyprice
+# "sellprice" and "selldate" is null in a buy transaction &  "price" is null in a sell transaction
+# "shares" is positive for buy transaction & negative for sell transaction.
 
 # Custom filter for parsing dates
 @app.template_filter('strptime')
@@ -47,8 +52,11 @@ def index():
     
     today = datetime.today().strftime("%d-%m-%Y")
 
+    cur.execute("SELECT symbol, AVG(price) as price, SUM(shares) AS shares, date FROM holdings WHERE user_id=? GROUP BY date",(user_id,))
+    tdata = cur.fetchall()
+
     return render_template("index.html",hdata=hdata, get_stock_data=get_stock_data,\
-                             today = today)
+                             today = today, tdata = tdata)
 
 
 

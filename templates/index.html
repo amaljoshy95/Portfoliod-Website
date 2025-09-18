@@ -14,14 +14,14 @@
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 <style>
     :root {
-        --primary-color: #2c5282; /* softer deep blue for sidebar & buttons */
-        --secondary-color: #717172; /* vibrant sky blue for hover & expanded accordion */
-        --accent-color: #70cd97; /* fresh green for positive profit */
-        --negative-color: #e78d8d; /* softer red for negative profit */
-        --text-color: #2d3748; /* slightly softer dark gray for general text */
-        --sidebar-gradient: linear-gradient(180deg, #2c5282, #3182ce); /* updated gradient for sidebar */
-        --shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* slightly stronger shadow for depth */
-        --bg-light: #edf2f7; /* softer light gray background for main content */
+        --primary-color: #2c5281;
+        --secondary-color: #4a435e;
+        --accent-color: #70cd97;
+        --negative-color: #e78d8d;
+        --text-color: #2d3748;
+        --sidebar-gradient: linear-gradient(180deg, #2c5282, #3182ce);
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        --bg-light: #edf2f7;
     }
 
     body {
@@ -133,7 +133,7 @@
 
     .label-small {
         font-size: 0.85rem;
-        color: #b0b7c2; /* softer gray for labels */
+        color: #b0b7c2;
     }
 
     .toggle-chart {
@@ -180,6 +180,62 @@
         transform: translateY(-50%);
     }
 
+    .transaction-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #f9fafb;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow);
+        overflow-x: auto; /* Allow horizontal scrolling */
+    }
+
+    .transaction-table th,
+    .transaction-table td {
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #e5e7eb; /* Add borders for separation */
+        white-space: nowrap; /* Prevent text wrapping */
+        overflow: hidden;
+        text-overflow: ellipsis; /* Handle overflow text */
+    }
+
+    .transaction-table th {
+        font-weight: 500;
+        color: var(--text-color);
+        background-color: #e5e7eb;
+        border-radius: 4px;
+    }
+
+    .transaction-table tr:hover td {
+        background-color: #edf2f7;
+        transform: scale(1.02);
+        transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+    .buy {
+        color: var(--accent-color);
+    }
+
+    .sell {
+        color: var(--negative-color);
+    }
+
+    /* Column widths for desktop */
+    .transaction-table th:nth-child(1),
+    .transaction-table td:nth-child(1) { min-width: 120px; } /* Date */
+    .transaction-table th:nth-child(2),
+    .transaction-table td:nth-child(2) { min-width: 100px; } /* No of Shares */
+    .transaction-table th:nth-child(3),
+    .transaction-table td:nth-child(3) { min-width: 80px; } /* Price */
+    .transaction-table th:nth-child(4),
+    .transaction-table td:nth-child(4) { min-width: 100px; } /* Total Value */
+    .transaction-table th:nth-child(5),
+    .transaction-table td:nth-child(5) { min-width: 100px; } /* Profit/Loss */
+    .transaction-table th:nth-child(6),
+    .transaction-table td:nth-child(6) { min-width: 80px; } /* % */
+
     @media (max-width: 768px) {
         #sidebar {
             left: -100%;
@@ -200,8 +256,8 @@
         #main {
             margin-left: 0;
             padding-top: 70px;
-            padding-left: 15px;
-            padding-right: 15px;
+            padding-left: 10px;
+            padding-right: 10px;
         }
 
         #header {
@@ -240,12 +296,55 @@
             margin-bottom: 5px;
         }
 
+        .accordion-body {
+            padding: 10px; /* Reduced padding to fit content */
+            max-width: 100%; /* Ensure content stays within viewport */
+            overflow-x: auto; /* Allow horizontal scrolling if needed */
+        }
+
+        .transaction-table {
+            padding: 5px;
+            overflow-x: auto; /* Enable horizontal scrolling */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            box-shadow: inset -10px 0 10px -10px rgba(0, 0, 0, 0.1), /* Left shadow */
+                        inset 10px 0 10px -10px rgba(0, 0, 0, 0.1); /* Right shadow */
+        }
+
+        .transaction-table th,
+        .transaction-table td {
+            padding: 6px;
+            background-color: #f9fafb; /* Light background for cells */
+            border: 1px solid #e5e7eb; /* Borders for separation */
+            font-size: 0.8rem; /* Smaller font for mobile */
+        }
+
+        .transaction-table th {
+            background-color: #e5e7eb;
+            font-size: 0.75rem; /* Smaller header font */
+            position: sticky;
+            top: 0; /* Sticky headers */
+            z-index: 1;
+        }
+
+        /* Column widths for mobile */
+        .transaction-table th:nth-child(1),
+        .transaction-table td:nth-child(1) { min-width: 90px; } /* Date */
+        .transaction-table th:nth-child(2),
+        .transaction-table td:nth-child(2) { min-width: 70px; } /* No of Shares */
+        .transaction-table th:nth-child(3),
+        .transaction-table td:nth-child(3) { min-width: 60px; } /* Price */
+        .transaction-table th:nth-child(4),
+        .transaction-table td:nth-child(4) { min-width: 70px; } /* Total Value */
+        .transaction-table th:nth-child(5),
+        .transaction-table td:nth-child(5) { min-width: 70px; } /* Profit/Loss */
+        .transaction-table th:nth-child(6),
+        .transaction-table td:nth-child(6) { min-width: 60px; } /* % */
+
         .toggle-chart {
             width: 100%;
         }
     }
 </style>
-
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <!-- Bootstrap JS and Popper.js CDN -->
@@ -258,28 +357,35 @@
         <h2>p◉rtf◉li◉id</h2>
     </header>
 
+    <!--Sidebar-->
     <div id="sidebar" class="animate__animated animate__fadeInLeft">
-        <h2><a href="/" class="animate__animated animate__bounce animate__slow">p◉rtf◉li◉id</a></h2>
+        <h2><a href="/" class="animate__animated animate__bounce animate__slow">p<span class="animate__animated animate__tada animate__infinite animate__slow">◉</span>
+            rtf<span class="animate__animated animate__tada animate__infinite animate__slow">◉</span>
+            li<span class="animate__animated animate__tada animate__infinite animate__slow">◉</span>id</a>
+        </h2>
+
         <ul>
+            <li><a href="/" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-bar-chart"></i> Dashboard</a></li>
             <li><a href="/buy" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-shopping-cart"></i> Buy</a></li>
             <li><a href="/sell" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-money"></i> Sell</a></li>
             <li><a href="#" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-history"></i> History</a></li>
             <li><a href="/logout" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-sign-out"></i> Logout</a></li>
         </ul>
     </div>
-    
 
+    <!--Heading-->
     <div id="main" class="animate__animated animate__fadeIn">
-        <h1>Equity</h1>
-        <div class="accordion" id="accordionPortfolio">
+        <h5>EQUITY</h5>
 
-            
+        <!--Accordion starts-->
+        <div class="accordion" id="accordionPortfolio">
+            <!--Loop for each item-->
             {%for hd in hdata %}
-            {% set cd = get_stock_data(hd.symbol) %}
+            {% set cd = {'regularMarketPrice': hd.price + 10} %}
             {% set item_id = loop.index %}
-            <!-- Stock 1 -->
+
+            <!--Main top row-->
             <div class="accordion-item">
-                
                 <h2 class="accordion-header" id="heading{{item_id}}">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{item_id}}" aria-expanded="false" aria-controls="collapse{{item_id}}">
                         <div class="row w-100">
@@ -289,29 +395,32 @@
                             </div>
                             <div class="col">
                                 <small class="label-small d-block">Avg. Buy Price</small>
-                                {{hd.price}}
+                                {{hd.price|round(2)}}
                             </div>
                             <div class="col">
                                 <small class="label-small d-block">Current Price</small>
-                                {{cd.regularMarketPrice}}
+                                {{cd.regularMarketPrice|round(2)}}
                             </div>
                             <div class="col">
                                 <small class="label-small d-block">No of Shares</small>
                                 {{hd.shares}}
                             </div>
-                            {% set profit = (cd.regularMarketPrice-hd.price)*hd.shares%}
+                            {% set profit = (cd.regularMarketPrice-hd.price)*hd.shares %}
                             <div class="col {{ 'profit-positive' if profit >= 0 else 'profit-negative' }}">
                                 <small class="label-small d-block">Profit/Loss</small>
-                                
                                 {{profit|round(1)}}
                             </div>
                             <div class="col {{ 'profit-positive' if profit >= 0 else 'profit-negative' }}">
                                 <small class="label-small d-block">Percentage</small>
-                                {{(profit*100.0/(hd.price*hd.shares))|round(1)}}%
+                                <div class="animate__animated animate__pulse animate__infinite animate__slower">
+                                    {{(profit*100.0/(hd.price*hd.shares))|round(1)}}%
+                                </div>
                             </div>
                         </div>
                     </button>
                 </h2>
+
+                <!--Second row of items-->
                 <div id="collapse{{item_id}}" class="accordion-collapse collapse" aria-labelledby="heading{{item_id}}" data-bs-parent="#accordionPortfolio">
                     <div class="accordion-body">
                         <div class="animate__animated animate__fadeIn">
@@ -322,25 +431,54 @@
                                 </div>
                                 <div class="col">
                                     <small class="label-small d-block">Total Invested</small>
-                                    {{hd.shares*hd.price}}
+                                    {{(hd.shares*hd.price)|round(2)}}
                                 </div>
                                 <div class="col">
                                     <small class="label-small d-block">Current Value</small>
-                                    {{cd.regularMarketPrice*hd.shares}}
+                                    {{(cd.regularMarketPrice*hd.shares)|round(2)}}
                                 </div>
                                 <div class="col">
                                     <small class="label-small d-block">CAGR</small>
-                                        {% set buy_date = hd.date | strptime("%d-%m-%Y") %}
-                                        {% set today = today | strptime("%d-%m-%Y") %}
-                                        {% set days_diff = (today - buy_date).days %}
-                                        {% set years = days_diff / 365.25 %}  
-
-                                        {% set ending_value = cd.regularMarketPrice %}
-                                        {% set beginning_value = hd.price %}
-                                        {{ (((ending_value / beginning_value) ** (1 / years) - 1) * 100) | round(2) if years > 0 and beginning_value > 0 else "NA" }}
-
+                                    {% set buy_date = hd.date | strptime("%d-%m-%Y") %}
+                                    {% set today = '18-09-2025' | strptime("%d-%m-%Y") %}
+                                    {% set days_diff = (today - buy_date).days %}
+                                    {% set years = days_diff / 365.25 %}
+                                    {% set ending_value = cd.regularMarketPrice %}
+                                    {% set beginning_value = hd.price %}
+                                    {{ (((ending_value / beginning_value) ** (1 / years) - 1) * 100) | round(2) if years > 0 and beginning_value > 0 else "NA" }}
                                 </div>
                             </div>
+
+                            <!--Transaction table in the second row-->
+                            <table class="transaction-table animate__animated animate__fadeInUp">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>No of Shares</th>
+                                        <th>Price</th>
+                                        <th>Total Value</th>
+                                        <th>Profit/Loss</th>
+                                        <th>%</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for td in tdata %}
+                                    {% if td.symbol == hd.symbol %}
+                                    <tr>
+                                        <td>{{ td.date }}</td>
+                                        <td>{{ td.shares }}</td>
+                                        <td>{{ td.price|round(2) }}</td>
+                                        <td>{{ (td.shares * td.price)|round(2) }}</td>
+                                        {% set profit_each = (cd.regularMarketPrice - td.price) * td.shares %}
+                                        <td class="{{ 'buy' if profit_each > 0 else 'sell' }}">{{ profit_each|round(2) }}</td>
+                                        <td class="{{ 'buy' if profit_each > 0 else 'sell' }}">{{ ((profit_each * 100) / (td.price * td.shares))|round(2) }}%</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+                            <!--Chart toggle button-->
                             <button class="btn btn-primary toggle-chart" data-chart-id="{{item_id}}">Show Chart</button>
                             <div class="chart-container" id="chart-{{item_id}}" style="display: none;">
                                 <canvas id="chartCanvas-{{item_id}}"></canvas>
@@ -409,22 +547,22 @@
             const chartContainer = document.getElementById(`chart-${chartId}`);
             const isHidden = chartContainer.style.display === 'none' || chartContainer.style.display === '';
             chartContainer.style.display = isHidden ? 'block' : 'none';
+            button.textContent = isHidden ? 'Hide Chart' : 'Show Chart';
 
             if (isHidden) {
                 chartContainer.classList.add('animate__animated', 'animate__fadeIn');
                 const canvasId = `chartCanvas-${chartId}`;
                 const ctx = document.getElementById(canvasId).getContext('2d');
-                if (!window[`chart${chartId}`]) {
+                if (!window.charts) window.charts = {};
+                if (!window.charts[chartId]) {
                     const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May'];
                     const data = chartId === '1' ? [150, 160, 170, 175, 180] : [100, 95, 92, 88, 90];
                     const stockSymbol = chartId === '1' ? 'AAPL' : 'GOOGL';
-                    window[`chart${chartId}`] = createChart(ctx, labels, data, stockSymbol);
+                    window.charts[chartId] = createChart(ctx, labels, data, stockSymbol);
                 }
             } else {
                 chartContainer.classList.remove('animate__fadeIn');
             }
-
-            button.textContent = isHidden ? 'Hide Chart' : 'Show Chart';
         }
 
         // Initialize chart buttons
