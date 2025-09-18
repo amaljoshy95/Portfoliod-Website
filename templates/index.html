@@ -15,9 +15,9 @@
 <style>
     :root {
         --primary-color: #2c5282; /* softer deep blue for sidebar & buttons */
-        --secondary-color: #4299e1; /* vibrant sky blue for hover & expanded accordion */
-        --accent-color: #48bb78; /* fresh green for positive profit */
-        --negative-color: #f56565; /* softer red for negative profit */
+        --secondary-color: #797a93; /* vibrant sky blue for hover & expanded accordion */
+        --accent-color: #70cd97; /* fresh green for positive profit */
+        --negative-color: #e78d8d; /* softer red for negative profit */
         --text-color: #2d3748; /* slightly softer dark gray for general text */
         --sidebar-gradient: linear-gradient(180deg, #2c5282, #3182ce); /* updated gradient for sidebar */
         --shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* slightly stronger shadow for depth */
@@ -133,7 +133,7 @@
 
     .label-small {
         font-size: 0.85rem;
-        color: #718096; /* softer gray for labels */
+        color: #b0b7c2; /* softer gray for labels */
     }
 
     .toggle-chart {
@@ -272,122 +272,71 @@
         <h1>Equity</h1>
         <div class="accordion" id="accordionPortfolio">
 
-
+            
+            {%for hd in hdata %}
+            {% set cd = get_stock_data(hd.symbol) %}
+            {% set item_id = loop.index %}
             <!-- Stock 1 -->
             <div class="accordion-item">
-                <h2 class="accordion-header" id="heading1">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="false" aria-controls="collapse1">
+                
+                <h2 class="accordion-header" id="heading{{item_id}}">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{item_id}}" aria-expanded="false" aria-controls="collapse{{item_id}}">
                         <div class="row w-100">
                             <div class="col">
                                 <small class="label-small d-block">Stock</small>
-                                AAPL
+                                {{hd.symbol}}
                             </div>
                             <div class="col">
                                 <small class="label-small d-block">Buy Price</small>
-                                $150.00
+                                {{hd.price}}
                             </div>
                             <div class="col">
                                 <small class="label-small d-block">Current Price</small>
-                                $180.00
+                                {{cd.regularMarketPrice}}
                             </div>
                             <div class="col">
                                 <small class="label-small d-block">No of Shares</small>
-                                10
+                                {{hd.shares}}
                             </div>
-                            <div class="col profit-positive">
+                            {% set profit = (cd.regularMarketPrice-hd.price)*hd.shares%}
+                            <div class="col {{ 'profit-positive' if profit >= 0 else 'profit-negative' }}">
                                 <small class="label-small d-block">Profit/Loss</small>
-                                $300.00
+                                
+                                {{profit|round(1)}}
                             </div>
-                            <div class="col profit-positive">
+                            <div class="col {{ 'profit-positive' if profit >= 0 else 'profit-negative' }}">
                                 <small class="label-small d-block">Percentage</small>
-                                20%
+                                {{(profit*100.0/(hd.price*hd.shares))|round(1)}}%
                             </div>
                         </div>
                     </button>
                 </h2>
-                <div id="collapse1" class="accordion-collapse collapse" aria-labelledby="heading1" data-bs-parent="#accordionPortfolio">
+                <div id="collapse{{item_id}}" class="accordion-collapse collapse" aria-labelledby="heading{{item_id}}" data-bs-parent="#accordionPortfolio">
                     <div class="accordion-body">
                         <div class="animate__animated animate__fadeIn">
                             <div class="row details-row">
                                 <div class="col">
                                     <small class="label-small d-block">Buy Date</small>
-                                    2023-01-01
+                                    {{hd.date}}
                                 </div>
                                 <div class="col">
                                     <small class="label-small d-block">Total Invested</small>
-                                    $1500.00
+                                    {{hd.shares*hd.price}}
                                 </div>
                                 <div class="col">
                                     <small class="label-small d-block">Current Value</small>
-                                    $1800.00
+                                    {{cd.regularMarketPrice*hd.shares}}
                                 </div>
                             </div>
-                            <button class="btn btn-primary toggle-chart" data-chart-id="1">Show Chart</button>
-                            <div class="chart-container" id="chart-1" style="display: none;">
-                                <canvas id="chartCanvas-1"></canvas>
+                            <button class="btn btn-primary toggle-chart" data-chart-id="{{item_id}}">Show Chart</button>
+                            <div class="chart-container" id="chart-{{item_id}}" style="display: none;">
+                                <canvas id="chartCanvas-{{item_id}}"></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Stock 2 -->
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="heading2">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
-                        <div class="row w-100">
-                            <div class="col">
-                                <small class="label-small d-block">Stock</small>
-                                GOOGL
-                            </div>
-                            <div class="col">
-                                <small class="label-small d-block">Buy Price</small>
-                                $100.00
-                            </div>
-                            <div class="col">
-                                <small class="label-small d-block">Current Price</small>
-                                $90.00
-                            </div>
-                            <div class="col">
-                                <small class="label-small d-block">No of Shares</small>
-                                5
-                            </div>
-                            <div class="col profit-negative">
-                                <small class="label-small d-block">Profit/Loss</small>
-                                -$50.00
-                            </div>
-                            <div class="col profit-negative">
-                                <small class="label-small d-block">Percentage</small>
-                                -10%
-                            </div>
-                        </div>
-                    </button>
-                </h2>
-                <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="heading2" data-bs-parent="#accordionPortfolio">
-                    <div class="accordion-body">
-                        <div class="animate__animated animate__fadeIn">
-                            <div class="row details-row">
-                                <div class="col">
-                                    <small class="label-small d-block">Buy Date</small>
-                                    2023-02-15
-                                </div>
-                                <div class="col">
-                                    <small class="label-small d-block">Total Invested</small>
-                                    $500.00
-                                </div>
-                                <div class="col">
-                                    <small class="label-small d-block">Current Value</small>
-                                    $450.00
-                                </div>
-                            </div>
-                            <button class="btn btn-primary toggle-chart" data-chart-id="2">Show Chart</button>
-                            <div class="chart-container" id="chart-2" style="display: none;">
-                                <canvas id="chartCanvas-2"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 

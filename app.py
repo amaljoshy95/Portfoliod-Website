@@ -3,6 +3,8 @@ from werkzeug.security import generate_password_hash,check_password_hash
 from dotenv import load_dotenv
 from os import getenv
 from helpers import login_required,get_stock_data
+from datetime import date
+from get_stock_data import get_stock_data
 
 load_dotenv()
 Flask.secret_key = getenv("FLASK_SECRET_KEY")
@@ -16,9 +18,17 @@ conn = sqlite3.connect("users.db",check_same_thread=False)
 conn.row_factory = sqlite3.Row 
 cur = conn.cursor()
 
+# enable foreign key constraints
+conn.execute("PRAGMA foreign_keys = ON")
+
 cur.execute("""CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY NOT NULL, username TEXT NOT NULL, 
                 hash TEXT NOT NULL)""")
+
+cur.execute("""CREATE TABLE IF NOT EXISTS holdings (id INTEGER PRIMARY KEY NOT NULL, symbol TEXT NOT NULL,
+            shares NUMBER NOT NULL, price FLOAT NOT NULL, date TEXT NOT NULL, user_id INTEGER NOT NULL, 
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)""")
 conn.commit()
+
 
 
 
@@ -26,7 +36,13 @@ conn.commit()
 @login_required
 def index():
     
-    return render_template("index.html")
+    user_id = session["user_id"]
+    cur.execute("""SELECT symbol, SUM(price*shares)*1.0/SUM(shares) AS price, SUM(shares) AS shares, date 
+                FROM holdings WHERE user_id = ? GROUP BY symbol""",(user_id,))
+    hdata = cur.fetchall()
+    
+    return render_template("index.html",hdata=hdata, get_stock_data=get_stock_data)
+
 
 
 @app.route("/stock_detail_api/<symbol>")
@@ -46,36 +62,32 @@ def buy():
     if request.method=="GET":
         return render_template("buy.html")
     
-    symbol = request.form.get("stockSymbol")
-    price = request.form.get("price")
+    data = request.get_json()
 
-    if not symbol:
-        return redirect(url_for("buy",error="Enter a symbol!"))
+    symbol = data.get("symbol")
+    price = data.get("buyPrice")
+    shares = data.get("shares")
 
-    response = get_stock_data(symbol)
-    if response["status"]=="error":
-        return redirect(url_for("buy",error="Invalid Symbol!"))
-
-    current_price = response["values"][0]["close"]
-    if not price:
-
-        return redirect(url_for("buy",valid='true',current_price=current_price))
-
-    try:
-        price = int(price)
-    except:
-        return redirect(url_for("buy",error="Enter a valid price!"))
+    if not symbol or not price or not shares:
+        return "",400
     
-    if price<=0:
-        return redirect(url_for("buy",error="Enter a valid price!"))
+    try:
+        price = float(price)
+        shares = int(shares)
+        if price<0 or shares<0:
+            return "",400
+    except:
+        return "",400
+    
+    user_id = session["user_id"]
+    curr_date = date.today().strftime("%d-%m-%Y")
 
+    cur.execute("INSERT INTO holdings (symbol,shares,price,date,user_id) VALUES (?,?,?,?,?)",(symbol,shares,price,curr_date,user_id))
+    conn.commit()
 
+    return jsonify({}),200
 
-
-
-
-
-
+    
 
 @app.route("/login", methods=["POST","GET"])
 def login():
@@ -139,6 +151,7 @@ def signup():
     return redirect("/")
 
 
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0",debug=True)
+    app.run(host="0.0.0.0", debug=True)
 

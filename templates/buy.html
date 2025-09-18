@@ -150,6 +150,12 @@
             color: #718096;
         }
 
+        .input-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
         #header {
             display: none;
             background: var(--sidebar-gradient);
@@ -230,6 +236,9 @@
     <!-- Bootstrap JS and Popper.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+
+    <!--Added for sweetalert after buying stock-->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <header id="header">
@@ -264,23 +273,28 @@
                     <thead>
                         <tr>
                             <th>Symbol</th>
+                            <th>Name</th>
                             <th>Exchange</th>
-                            <th>Current Price</th>
-                            <th>Type</th>
-                            
+                            <th>Market Price</th>
                         </tr>
                     </thead>
                     <tbody id="stock-details">
                         <!-- Populated by JavaScript -->
                     </tbody>
                 </table>
-                <div class="mb-3">
-                    <label for="buy-price" class="label-small">Buy Price</label>
-                    <input type="number" class="form-control" id="buy-price" placeholder="Enter buy price" step="0.01" style="max-width: 300px;">
+                <div class="input-group mb-3">
+                    <div>
+                        <label for="buy-price" class="label-small">Buy Price</label>
+                        <input type="number" class="form-control" id="buy-price" placeholder="Enter buy price" step="0.01" style="max-width: 300px;">
+                    </div>
+                    <div>
+                        <label for="shares" class="label-small">Number of Shares</label>
+                        <input type="number" class="form-control" id="shares" placeholder="Enter number of shares" min="1" step="1" style="max-width: 300px;">
+                    </div>
                 </div>
                 <button id="buy-stock" class="btn btn-primary">Buy</button>
+                <div id="buy-error-message" class="error-message"></div>
             </div>
-            <div id="buy-error-message" class="error-message"></div>
         </div>
     </div>
 
@@ -311,7 +325,8 @@
         const stockSymbolInput = document.getElementById('stock-symbol');
         const buyButton = document.getElementById('buy-stock');
         const buyPriceInput = document.getElementById('buy-price');
-        const buyerrorMessage = document.getElementById('buy-error-message')
+        const sharesInput = document.getElementById('shares');
+        const buyErrorMessage = document.getElementById('buy-error-message');
 
         getDetailsButton.addEventListener('click', async () => {
             const symbol = stockSymbolInput.value.trim().toUpperCase();
@@ -324,11 +339,10 @@
             }
 
             try {
-                // Mock API call - replace with actual backend endpoint
                 const response = await fetch(`/stock_detail_api/${symbol}`);
                 const data = await response.json();
 
-                if (data.status!="error") {
+                if (response.ok) {
                     // Hide input and show details
                     stockInputContainer.style.display = 'none';
                     stockDetailsContainer.style.display = 'block';
@@ -338,11 +352,10 @@
                     const stockDetails = document.getElementById('stock-details');
                     stockDetails.innerHTML = `
                         <tr>
-                            <td>${data.meta.symbol}</td>
-                            <td>${data.meta.exchange}</td>
-                            <td>${data.values[0].close}</td>
-                            <td>${data.meta.type}</td>
-                        
+                            <td>${data.symbol}</td>
+                            <td>${data.name}</td>
+                            <td>${data.exchange}</td>
+                            <td>${data.currency} ${data.regularMarketPrice}</td>
                         </tr>
                     `;
                     errorMessage.style.display = 'none';
@@ -362,44 +375,68 @@
 
         buyButton.addEventListener('click', async () => {
             const buyPrice = parseFloat(buyPriceInput.value);
-            if (!buyPrice || buyPrice <= 0) {
-                buyerrorMessage.textContent = 'Please enter a valid buy price';
-                buyerrorMessage.style.display = 'block';
-                buyerrorMessage.classList.add('animate__animated', 'animate__shakeX');
-                setTimeout(() => buyerrorMessage.classList.remove('animate__shakeX'), 1000);
+            const shares = parseInt(sharesInput.value);
+            if (!buyPrice || buyPrice < 0) {
+                buyErrorMessage.textContent = 'Please enter a valid buy price';
+                buyErrorMessage.style.display = 'block';
+                buyErrorMessage.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => buyErrorMessage.classList.remove('animate__shakeX'), 1000);
+                return;
+            }
+            if (!shares || shares <= 0) {
+                buyErrorMessage.textContent = 'Please enter a valid number of shares';
+                buyErrorMessage.style.display = 'block';
+                buyErrorMessage.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => buyErrorMessage.classList.remove('animate__shakeX'), 1000);
                 return;
             }
 
             try {
-                // Mock API call for buying stock - replace with actual backend endpoint
-                const response = await fetch('/api/buy-stock', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        symbol: stockSymbolInput.value.trim().toUpperCase(),
-                        buyPrice
-                    })
-                });
+                // API call for buying stock
+                    const response = await fetch('/buy', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            symbol: stockSymbolInput.value.trim().toUpperCase(),
+                            buyPrice,
+                            shares
+                        })
+                    });
 
-                if (response.ok) {
-                    alert('Stock purchased successfully!');
+            if (response.ok) {
+                Swal.fire({
+                    title: "🎉 Success!",
+                    text: "Stock purchased successfully! Redirecting to dashboard...",
+                    icon: "success",
+                    confirmButtonText: "OK",
+                    timer: 3500, // auto close in 2s
+                    timerProgressBar: true,
+                    showCloseButton: true
+                }).then(() => {
                     // Reset form
                     stockInputContainer.style.display = 'block';
                     stockDetailsContainer.style.display = 'none';
                     stockSymbolInput.value = '';
                     buyPriceInput.value = '';
-                } else {
+                    sharesInput.value = '';
+
+                    // Redirect
+                    window.location.href = "/";
+                });
+            
+
+               }   else {
                     const data = await response.json();
-                    errorMessage.textContent = data.error || 'Error purchasing stock';
-                    errorMessage.style.display = 'block';
-                    errorMessage.classList.add('animate__animated', 'animate__shakeX');
-                    setTimeout(() => errorMessage.classList.remove('animate__shakeX'), 1000);
+                    buyErrorMessage.textContent = data.error || 'Error purchasing stock';
+                    buyErrorMessage.style.display = 'block';
+                    buyErrorMessage.classList.add('animate__animated', 'animate__shakeX');
+                    setTimeout(() => buyErrorMessage.classList.remove('animate__shakeX'), 1000);
                 }
             } catch (error) {
-                errorMessage.textContent = 'Error processing purchase';
-                errorMessage.style.display = 'block';
-                errorMessage.classList.add('animate__animated', 'animate__shakeX');
-                setTimeout(() => errorMessage.classList.remove('animate__shakeX'), 1000);
+                buyErrorMessage.textContent = 'Error processing purchase';
+                buyErrorMessage.style.display = 'block';
+                buyErrorMessage.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => buyErrorMessage.classList.remove('animate__shakeX'), 1000);
             }
         });
     </script>
