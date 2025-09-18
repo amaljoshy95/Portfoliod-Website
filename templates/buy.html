@@ -236,8 +236,7 @@
     <!-- Bootstrap JS and Popper.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
-
-    <!--Added for sweetalert after buying stock-->
+    <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
@@ -262,7 +261,7 @@
             <div id="stock-input-container">
                 <div class="mb-3">
                     <label for="stock-symbol" class="label-small">Stock Symbol</label>
-                    <input type="text" class="form-control" id="stock-symbol" placeholder="Enter stock symbol (e.g., AAPL)" style="max-width: 300px;">
+                    <input type="text" class="form-control" id="stock-symbol" placeholder="Enter stock symbol (e.g., INFY.NS)" style="max-width: 300px;">
                 </div>
                 <button id="get-details" class="btn btn-primary">Get Details</button>
                 <div id="error-message" class="error-message"></div>
@@ -290,6 +289,10 @@
                     <div>
                         <label for="shares" class="label-small">Number of Shares</label>
                         <input type="number" class="form-control" id="shares" placeholder="Enter number of shares" min="1" step="1" style="max-width: 300px;">
+                    </div>
+                    <div>
+                        <label for="buy-date" class="label-small">Buy Date</label>
+                        <input type="date" class="form-control" id="buy-date" style="max-width: 300px;">
                     </div>
                 </div>
                 <button id="buy-stock" class="btn btn-primary">Buy</button>
@@ -326,6 +329,7 @@
         const buyButton = document.getElementById('buy-stock');
         const buyPriceInput = document.getElementById('buy-price');
         const sharesInput = document.getElementById('shares');
+        const buyDateInput = document.getElementById('buy-date');
         const buyErrorMessage = document.getElementById('buy-error-message');
 
         getDetailsButton.addEventListener('click', async () => {
@@ -376,6 +380,8 @@
         buyButton.addEventListener('click', async () => {
             const buyPrice = parseFloat(buyPriceInput.value);
             const shares = parseInt(sharesInput.value);
+            const buyDate = buyDateInput.value;
+
             if (!buyPrice || buyPrice < 0) {
                 buyErrorMessage.textContent = 'Please enter a valid buy price';
                 buyErrorMessage.style.display = 'block';
@@ -390,42 +396,49 @@
                 setTimeout(() => buyErrorMessage.classList.remove('animate__shakeX'), 1000);
                 return;
             }
+            if (!buyDate) {
+                buyErrorMessage.textContent = 'Please select a valid buy date';
+                buyErrorMessage.style.display = 'block';
+                buyErrorMessage.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => buyErrorMessage.classList.remove('animate__shakeX'), 1000);
+                return;
+            }
 
             try {
                 // API call for buying stock
-                    const response = await fetch('/buy', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            symbol: stockSymbolInput.value.trim().toUpperCase(),
-                            buyPrice,
-                            shares
-                        })
-                    });
-
-            if (response.ok) {
-                Swal.fire({
-                    title: "🎉 Success!",
-                    text: "Stock purchased successfully! Redirecting to dashboard...",
-                    icon: "success",
-                    confirmButtonText: "OK",
-                    timer: 3500, // auto close in 2s
-                    timerProgressBar: true,
-                    showCloseButton: true
-                }).then(() => {
-                    // Reset form
-                    stockInputContainer.style.display = 'block';
-                    stockDetailsContainer.style.display = 'none';
-                    stockSymbolInput.value = '';
-                    buyPriceInput.value = '';
-                    sharesInput.value = '';
-
-                    // Redirect
-                    window.location.href = "/";
+                const response = await fetch('/buy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        symbol: stockSymbolInput.value.trim().toUpperCase(),
+                        buyPrice,
+                        shares,
+                        buyDate
+                    })
                 });
-            
 
-               }   else {
+                if (response.ok) {
+                    Swal.fire({
+                        title: "🎉 Success!",
+                        text: "Stock purchased successfully! Redirecting to dashboard...",
+                        icon: "success",
+                        confirmButtonText: "OK",
+                        timer: 2500,
+                        timerProgressBar: true,
+                        showCloseButton: true
+                    }).then(() => {
+                        // Reset form
+                        stockInputContainer.style.display = 'block';
+                        stockDetailsContainer.style.display = 'none';
+                        stockSymbolInput.value = '';
+                        buyPriceInput.value = '';
+                        sharesInput.value = '';
+                        buyDateInput.value = '';
+
+                        // Redirect
+                        window.location.href = "/";
+                    });
+                } else {
                     const data = await response.json();
                     buyErrorMessage.textContent = data.error || 'Error purchasing stock';
                     buyErrorMessage.style.display = 'block';

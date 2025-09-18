@@ -15,7 +15,7 @@
 <style>
     :root {
         --primary-color: #2c5282; /* softer deep blue for sidebar & buttons */
-        --secondary-color: #797a93; /* vibrant sky blue for hover & expanded accordion */
+        --secondary-color: #717172; /* vibrant sky blue for hover & expanded accordion */
         --accent-color: #70cd97; /* fresh green for positive profit */
         --negative-color: #e78d8d; /* softer red for negative profit */
         --text-color: #2d3748; /* slightly softer dark gray for general text */
@@ -259,14 +259,15 @@
     </header>
 
     <div id="sidebar" class="animate__animated animate__fadeInLeft">
-        <h2>p◉rtf◉li◉id</h2>
+        <h2><a href="/" class="animate__animated animate__bounce animate__slow">p◉rtf◉li◉id</a></h2>
         <ul>
             <li><a href="/buy" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-shopping-cart"></i> Buy</a></li>
-            <li><a href="#" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-money"></i> Sell</a></li>
+            <li><a href="/sell" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-money"></i> Sell</a></li>
             <li><a href="#" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-history"></i> History</a></li>
-            <li><a href="#" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-sign-out"></i> Logout</a></li>
+            <li><a href="/logout" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-sign-out"></i> Logout</a></li>
         </ul>
     </div>
+    
 
     <div id="main" class="animate__animated animate__fadeIn">
         <h1>Equity</h1>
@@ -287,7 +288,7 @@
                                 {{hd.symbol}}
                             </div>
                             <div class="col">
-                                <small class="label-small d-block">Buy Price</small>
+                                <small class="label-small d-block">Avg. Buy Price</small>
                                 {{hd.price}}
                             </div>
                             <div class="col">
@@ -316,7 +317,7 @@
                         <div class="animate__animated animate__fadeIn">
                             <div class="row details-row">
                                 <div class="col">
-                                    <small class="label-small d-block">Buy Date</small>
+                                    <small class="label-small d-block">First Buy Date</small>
                                     {{hd.date}}
                                 </div>
                                 <div class="col">
@@ -326,6 +327,18 @@
                                 <div class="col">
                                     <small class="label-small d-block">Current Value</small>
                                     {{cd.regularMarketPrice*hd.shares}}
+                                </div>
+                                <div class="col">
+                                    <small class="label-small d-block">CAGR</small>
+                                        {% set buy_date = hd.date | strptime("%d-%m-%Y") %}
+                                        {% set today = today | strptime("%d-%m-%Y") %}
+                                        {% set days_diff = (today - buy_date).days %}
+                                        {% set years = days_diff / 365.25 %}  
+
+                                        {% set ending_value = cd.regularMarketPrice %}
+                                        {% set beginning_value = hd.price %}
+                                        {{ (((ending_value / beginning_value) ** (1 / years) - 1) * 100) | round(2) if years > 0 and beginning_value > 0 else "NA" }}
+
                                 </div>
                             </div>
                             <button class="btn btn-primary toggle-chart" data-chart-id="{{item_id}}">Show Chart</button>

@@ -3,11 +3,21 @@ import json
 from datetime import datetime
 
 def get_stock_data(symbol, range="1mo", interval="1d"):
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range={range}&interval={interval}"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
-    data = response.json()
+
+    try:
+        nse_symbol = symbol+".NS"
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{nse_symbol}?range={range}&interval={interval}"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+    except:
+        bse_symbol = symbol+".BO"
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range={range}&interval={interval}"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
 
     # Extract the result object
     result = data["chart"]["result"][0]

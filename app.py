@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash,check_password_hash
 from dotenv import load_dotenv
 from os import getenv
 from helpers import login_required,get_stock_data
-from datetime import date
+from datetime import date,datetime
 from get_stock_data import get_stock_data
 
 load_dotenv()
@@ -30,6 +30,10 @@ cur.execute("""CREATE TABLE IF NOT EXISTS holdings (id INTEGER PRIMARY KEY NOT N
 conn.commit()
 
 
+# Custom filter for parsing dates
+@app.template_filter('strptime')
+def strptime_filter(date_string, format="%d-%m-%Y"):
+    return datetime.strptime(date_string, format)
 
 
 @app.route("/")
@@ -41,7 +45,10 @@ def index():
                 FROM holdings WHERE user_id = ? GROUP BY symbol""",(user_id,))
     hdata = cur.fetchall()
     
-    return render_template("index.html",hdata=hdata, get_stock_data=get_stock_data)
+    today = datetime.today().strftime("%d-%m-%Y")
+
+    return render_template("index.html",hdata=hdata, get_stock_data=get_stock_data,\
+                             today = today)
 
 
 
@@ -50,7 +57,6 @@ def index():
 def stock_detail_api(symbol):
 
     response = get_stock_data(symbol)
-
     return jsonify(response)
 
 
@@ -68,7 +74,14 @@ def buy():
     price = data.get("buyPrice")
     shares = data.get("shares")
 
-    if not symbol or not price or not shares:
+    buydate = data.get("buyDate")
+    try:
+        buydate_object = datetime.strptime(buydate, "%Y-%m-%d")
+        buydate = buydate_object.strftime("%d-%m-%Y")
+    except:
+        return "",400
+
+    if not symbol or not price or not shares or not buydate:
         return "",400
     
     try:
@@ -80,14 +93,20 @@ def buy():
         return "",400
     
     user_id = session["user_id"]
-    curr_date = date.today().strftime("%d-%m-%Y")
 
-    cur.execute("INSERT INTO holdings (symbol,shares,price,date,user_id) VALUES (?,?,?,?,?)",(symbol,shares,price,curr_date,user_id))
+    cur.execute("INSERT INTO holdings (symbol,shares,price,date,user_id) VALUES (?,?,?,?,?)",(symbol,shares,price,buydate,user_id))
     conn.commit()
 
     return jsonify({}),200
 
-    
+
+@app.route("/logout")
+def logout():
+
+    session.clear()
+    return redirect("/login")
+
+
 
 @app.route("/login", methods=["POST","GET"])
 def login():
