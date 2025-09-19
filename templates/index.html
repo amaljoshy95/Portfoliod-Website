@@ -108,6 +108,7 @@
         margin-bottom: 15px;
         box-shadow: var(--shadow);
         background-color: white;
+        width: auto;
     }
 
     .accordion-button {
@@ -180,25 +181,29 @@
         transform: translateY(-50%);
     }
 
+    .transaction-table-container {
+        width: 100%;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+    }
+
     .transaction-table {
         width: 100%;
         border-collapse: collapse;
         background-color: #f9fafb;
-        padding: 15px;
         border-radius: 8px;
-        margin-bottom: 20px;
-        box-shadow: var(--shadow);
-        overflow-x: auto; /* Allow horizontal scrolling */
+        table-layout: fixed; /* Ensure columns resize proportionally */
     }
 
     .transaction-table th,
     .transaction-table td {
         padding: 10px;
         text-align: center;
-        border: 1px solid #e5e7eb; /* Add borders for separation */
-        white-space: nowrap; /* Prevent text wrapping */
+        border: 1px solid #e5e7eb;
+        white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis; /* Handle overflow text */
+        text-overflow: ellipsis;
     }
 
     .transaction-table th {
@@ -206,6 +211,9 @@
         color: var(--text-color);
         background-color: #e5e7eb;
         border-radius: 4px;
+        position: sticky;
+        top: 0;
+        z-index: 1;
     }
 
     .transaction-table tr:hover td {
@@ -224,17 +232,19 @@
 
     /* Column widths for desktop */
     .transaction-table th:nth-child(1),
-    .transaction-table td:nth-child(1) { min-width: 120px; } /* Date */
+    .transaction-table td:nth-child(1) { width: 18%; } /* Date */
     .transaction-table th:nth-child(2),
-    .transaction-table td:nth-child(2) { min-width: 100px; } /* No of Shares */
+    .transaction-table td:nth-child(2) { width: 14%; } /* No of Shares */
     .transaction-table th:nth-child(3),
-    .transaction-table td:nth-child(3) { min-width: 80px; } /* Price */
+    .transaction-table td:nth-child(3) { width: 14%; } /* Price */
     .transaction-table th:nth-child(4),
-    .transaction-table td:nth-child(4) { min-width: 100px; } /* Total Value */
+    .transaction-table td:nth-child(4) { width: 18%; } /* Total Value */
     .transaction-table th:nth-child(5),
-    .transaction-table td:nth-child(5) { min-width: 100px; } /* Profit/Loss */
+    .transaction-table td:nth-child(5) { width: 14%; } /* Profit/Loss */
     .transaction-table th:nth-child(6),
-    .transaction-table td:nth-child(6) { min-width: 80px; } /* % */
+    .transaction-table td:nth-child(6) { width: 14%; } /* % */
+    .transaction-table th:nth-child(7),
+    .transaction-table td:nth-child(7) { width: 12%; } /* CAGR */
 
     @media (max-width: 768px) {
         #sidebar {
@@ -284,6 +294,11 @@
             padding: 15px;
         }
 
+        .accordion-button:not(.collapsed) {
+            max-width: 100vw;
+            padding: 10px;
+        }
+
         .accordion-button .row .col {
             flex-basis: 50%;
             max-width: 50%;
@@ -296,49 +311,62 @@
             margin-bottom: 5px;
         }
 
+        .accordion {
+            max-width: 100vw;
+        }
+
         .accordion-body {
-            padding: 10px; /* Reduced padding to fit content */
-            max-width: 100%; /* Ensure content stays within viewport */
-            overflow-x: auto; /* Allow horizontal scrolling if needed */
+            padding: 10px;
+            max-width: 100vw;
+            width: 100%;
+        }
+
+        .transaction-table-container {
+            width: 100%;
+            max-width: 100vw;
         }
 
         .transaction-table {
-            padding: 5px;
-            overflow-x: auto; /* Enable horizontal scrolling */
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-            box-shadow: inset -10px 0 10px -10px rgba(0, 0, 0, 0.1), /* Left shadow */
-                        inset 10px 0 10px -10px rgba(0, 0, 0, 0.1); /* Right shadow */
+            width: 100%;
+            table-layout: fixed;
         }
 
         .transaction-table th,
         .transaction-table td {
-            padding: 6px;
-            background-color: #f9fafb; /* Light background for cells */
-            border: 1px solid #e5e7eb; /* Borders for separation */
-            font-size: 0.8rem; /* Smaller font for mobile */
+            padding: 4px 2px;
+            font-size: clamp(0.5rem, 1.7vw, 0.65rem); /* Dynamic font size, slightly adjusted */
+            border: 1px solid #e5e7eb;
+            white-space: nowrap; /* Enforce single line */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+            vertical-align: middle;
         }
 
         .transaction-table th {
+            font-size: clamp(0.45rem, 1.5vw, 0.6rem); /* Slightly smaller for headers */
             background-color: #e5e7eb;
-            font-size: 0.75rem; /* Smaller header font */
             position: sticky;
-            top: 0; /* Sticky headers */
+            top: 0;
             z-index: 1;
+            padding: 4px 2px;
         }
 
-        /* Column widths for mobile */
+        /* Adjusted column widths for mobile */
         .transaction-table th:nth-child(1),
-        .transaction-table td:nth-child(1) { min-width: 90px; } /* Date */
+        .transaction-table td:nth-child(1) { width: 18%; } /* Date */
         .transaction-table th:nth-child(2),
-        .transaction-table td:nth-child(2) { min-width: 70px; } /* No of Shares */
+        .transaction-table td:nth-child(2) { width: 14%; } /* No of Shares */
         .transaction-table th:nth-child(3),
-        .transaction-table td:nth-child(3) { min-width: 60px; } /* Price */
+        .transaction-table td:nth-child(3) { width: 14%; } /* Price */
         .transaction-table th:nth-child(4),
-        .transaction-table td:nth-child(4) { min-width: 70px; } /* Total Value */
+        .transaction-table td:nth-child(4) { width: 18%; } /* Total Value */
         .transaction-table th:nth-child(5),
-        .transaction-table td:nth-child(5) { min-width: 70px; } /* Profit/Loss */
+        .transaction-table td:nth-child(5) { width: 14%; } /* Profit/Loss */
         .transaction-table th:nth-child(6),
-        .transaction-table td:nth-child(6) { min-width: 60px; } /* % */
+        .transaction-table td:nth-child(6) { width: 14%; } /* % */
+        .transaction-table th:nth-child(7),
+        .transaction-table td:nth-child(7) { width: 12%; } /* CAGR */
 
         .toggle-chart {
             width: 100%;
@@ -381,7 +409,7 @@
         <div class="accordion" id="accordionPortfolio">
             <!--Loop for each item-->
             {%for hd in hdata %}
-            {% set cd = {'regularMarketPrice': hd.price + 10} %}
+            {% set cd = get_stock_data(hd.symbol)%}
             {% set item_id = loop.index %}
 
             <!--Main top row-->
@@ -438,45 +466,72 @@
                                     {{(cd.regularMarketPrice*hd.shares)|round(2)}}
                                 </div>
                                 <div class="col">
-                                    <small class="label-small d-block">CAGR</small>
-                                    {% set buy_date = hd.date | strptime("%d-%m-%Y") %}
-                                    {% set today = '18-09-2025' | strptime("%d-%m-%Y") %}
-                                    {% set days_diff = (today - buy_date).days %}
-                                    {% set years = days_diff / 365.25 %}
-                                    {% set ending_value = cd.regularMarketPrice %}
-                                    {% set beginning_value = hd.price %}
-                                    {{ (((ending_value / beginning_value) ** (1 / years) - 1) * 100) | round(2) if years > 0 and beginning_value > 0 else "NA" }}
+                                    <small class="label-small d-block">Average CAGR</small>
+                                    <div id="avg_cagr{{item_id}}"></div>
                                 </div>
                             </div>
 
                             <!--Transaction table in the second row-->
-                            <table class="transaction-table animate__animated animate__fadeInUp">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>No of Shares</th>
-                                        <th>Price</th>
-                                        <th>Total Value</th>
-                                        <th>Profit/Loss</th>
-                                        <th>%</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                            <div class="transaction-table-container">
+                                <table class="transaction-table animate__animated animate__fadeInUp">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>No of Shares</th>
+                                            <th>Price</th>
+                                            <th>Total Value</th>
+                                            <th>Profit/Loss</th>
+                                            <th>%</th>
+                                            <th>CAGR</th>
+                                        </tr>
+                                    </thead>
+
+
+                                    <tbody>
+                                    {% set cagr_sum = 0 %}
+                                    {% set valid_transactions = 0 %}
                                     {% for td in tdata %}
                                     {% if td.symbol == hd.symbol %}
                                     <tr>
                                         <td>{{ td.date }}</td>
                                         <td>{{ td.shares }}</td>
-                                        <td>{{ td.price|round(2) }}</td>
-                                        <td>{{ (td.shares * td.price)|round(2) }}</td>
+                                        <td>{{ td.price|round(1) }}</td>
+                                        <td>{{ (td.shares * td.price)|round(1) }}</td>
                                         {% set profit_each = (cd.regularMarketPrice - td.price) * td.shares %}
-                                        <td class="{{ 'buy' if profit_each > 0 else 'sell' }}">{{ profit_each|round(2) }}</td>
-                                        <td class="{{ 'buy' if profit_each > 0 else 'sell' }}">{{ ((profit_each * 100) / (td.price * td.shares))|round(2) }}%</td>
-                                    </tr>
-                                    {% endif %}
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                                        <td class="{{ 'buy' if profit_each > 0 else 'sell' }}">{{ profit_each|round(1) }}</td>
+                                        <td class="{{ 'buy' if profit_each > 0 else 'sell' }}">{{ ((profit_each * 100) / (td.price * td.shares))|round(1) }}%</td>
+                                        <td>
+                                            {% set trans_date = td.date | strptime("%d-%m-%Y") %}
+                                            {% set today = today | strptime("%d-%m-%Y") %}
+                                            {% set days_diff = (today - trans_date).days %}
+                                            {% set years = days_diff / 365.25 %}
+                                            {% set ending_value = cd.regularMarketPrice %}
+                                            {% set beginning_value = td.price %}
+                                            {% if years > 0 and beginning_value > 0 %}
+                                                {% set cagr = (((ending_value / beginning_value) ** (1 / years) - 1) * 100) %}
+                                                {% set cagr_sum = cagr_sum + cagr %}
+                                                {% set valid_transactions = valid_transactions + 1 %}
+                                                {{ cagr|round(1) }}
+                                            {% else %}
+                                                {{ "NA" }}
+                                            {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% set avg_cagr = (cagr_sum / valid_transactions)|round(1) if valid_transactions > 0 else "NA" %}
+                                        
+                                        <script>
+                                            document.getElementById("avg_cagr{{item_id}}").innerHTML = "{{ avg_cagr }}";
+                                        </script>
+
+                                    </tbody>
+
+                                </table>
+
+
+
+                            </div>
 
                             <!--Chart toggle button-->
                             <button class="btn btn-primary toggle-chart" data-chart-id="{{item_id}}">Show Chart</button>
@@ -587,6 +642,8 @@
                 main.classList.remove('shifted');
             }
         });
+
+        
     </script>
 </body>
 </html>
