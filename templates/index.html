@@ -396,7 +396,7 @@
             <li><a href="/" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-bar-chart"></i> Dashboard</a></li>
             <li><a href="/buy" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-shopping-cart"></i> Buy</a></li>
             <li><a href="/sell" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-money"></i> Sell</a></li>
-            <li><a href="#" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-history"></i> History</a></li>
+            <li><a href="history" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-history"></i> History</a></li>
             <li><a href="/logout" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-sign-out"></i> Logout</a></li>
         </ul>
     </div>
@@ -486,7 +486,6 @@
                                         </tr>
                                     </thead>
 
-
                                     <tbody>
                                     
                                     {% set ns = namespace(cagr_sum=0, valid_transactions=0) %}
@@ -535,7 +534,7 @@
                             </div>
 
                             <!--Chart toggle button-->
-                            <button class="btn btn-primary toggle-chart" data-chart-id="{{item_id}}">Show Chart</button>
+                            <button class="btn btn-primary toggle-chart" data-chart-id="{{item_id}}" data-symbol={{hd.symbol}}>Show Chart</button>
                             <div class="chart-container" id="chart-{{item_id}}" style="display: none;">
                                 <canvas id="chartCanvas-{{item_id}}"></canvas>
                             </div>
@@ -597,9 +596,12 @@
             });
         }
 
+
         // Toggle chart visibility
-        function toggleChart(button) {
+
+        async function toggleChart(button) {
             const chartId = button.getAttribute('data-chart-id');
+            const stockSymbol = button.getAttribute('data-symbol');
             const chartContainer = document.getElementById(`chart-${chartId}`);
             const isHidden = chartContainer.style.display === 'none' || chartContainer.style.display === '';
             chartContainer.style.display = isHidden ? 'block' : 'none';
@@ -611,15 +613,28 @@
                 const ctx = document.getElementById(canvasId).getContext('2d');
                 if (!window.charts) window.charts = {};
                 if (!window.charts[chartId]) {
-                    const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May'];
-                    const data = chartId === '1' ? [150, 160, 170, 175, 180] : [100, 95, 92, 88, 90];
-                    const stockSymbol = chartId === '1' ? 'AAPL' : 'GOOGL';
+                    
+                    const response = await fetch(`stock_detail_api/${stockSymbol}`);
+                    const resp_data = await response.json();   // parse JSON
+                    const labels = resp_data.history.map(item => item.date);
+                    const data = resp_data.history.map(item => item.price);
+                    
                     window.charts[chartId] = createChart(ctx, labels, data, stockSymbol);
                 }
             } else {
                 chartContainer.classList.remove('animate__fadeIn');
             }
         }
+
+
+
+
+
+
+
+
+
+
 
         // Initialize chart buttons
         document.querySelectorAll('.toggle-chart').forEach(button => {
