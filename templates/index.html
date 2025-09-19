@@ -488,8 +488,8 @@
 
 
                                     <tbody>
-                                    {% set cagr_sum = 0 %}
-                                    {% set valid_transactions = 0 %}
+                                    
+                                    {% set ns = namespace(cagr_sum=0, valid_transactions=0) %}
                                     {% for td in tdata %}
                                     {% if td.symbol == hd.symbol %}
                                     <tr>
@@ -509,8 +509,8 @@
                                             {% set beginning_value = td.price %}
                                             {% if years > 0 and beginning_value > 0 %}
                                                 {% set cagr = (((ending_value / beginning_value) ** (1 / years) - 1) * 100) %}
-                                                {% set cagr_sum = cagr_sum + cagr %}
-                                                {% set valid_transactions = valid_transactions + 1 %}
+                                                {% set ns.cagr_sum = ns.cagr_sum + cagr %}
+                                                {% set ns.valid_transactions = ns.valid_transactions + 1 %}
                                                 {{ cagr|round(1) }}
                                             {% else %}
                                                 {{ "NA" }}
@@ -519,7 +519,8 @@
                                         </tr>
                                         {% endif %}
                                         {% endfor %}
-                                        {% set avg_cagr = (cagr_sum / valid_transactions)|round(1) if valid_transactions > 0 else "NA" %}
+                                        {% set avg_cagr = (ns.cagr_sum / ns.valid_transactions)|round(1) if ns.valid_transactions > 0 else "NA" %}
+                                        
                                         
                                         <script>
                                             document.getElementById("avg_cagr{{item_id}}").innerHTML = "{{ avg_cagr }}";
