@@ -117,9 +117,7 @@ def logout():
 
     session.clear()
 
-    return render_template("demo.html")
-    #return redirect("/login")
-
+    return redirect("/login")
 
 
 @app.route("/login", methods=["POST","GET"])

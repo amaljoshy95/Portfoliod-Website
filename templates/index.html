@@ -385,6 +385,27 @@
             width: 100%;
         }
     }
+
+    #preloader {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: var(--bg-light);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: opacity 0.5s ease;
+    }
+
+    #preloader h2 {
+        color: var(--primary-color);
+        font-size: 3rem;
+        text-align: center;
+        margin: 0;
+    }
 </style>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
@@ -395,6 +416,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
 </head>
 <body>
+
+    <div id="preloader">
+        <h2 class="animate__animated animate__pulse animate__infinite">p<span class="animate__animated animate__tada animate__infinite animate__slow">◉</span>rtf<span class="animate__animated animate__tada animate__infinite animate__slow">◉</span>li<span class="animate__animated animate__tada animate__infinite animate__slow">◉</span>id</h2>
+    </div>
+
     <header id="header">
         <span id="hamburger">&#9776;</span>
         <h2>p◉rtf◉li◉id</h2>
@@ -562,6 +588,7 @@
                                     <button class="btn btn-secondary" data-view="max">Max</button>
                                 </div>
                                 <canvas id="chartCanvas-{{item_id}}"></canvas>
+
                             </div>
                         </div>
                     </div>
@@ -579,7 +606,7 @@
                 type: 'line',
                 data: {
                     datasets: [{
-                        label: `${stockSymbol} Price History`,
+                        label: `${stockSymbol} Price`,
                         data: dataPoints,
                         borderColor: '#003087',
                         backgroundColor: 'rgba(0, 48, 135, 0.1)',
@@ -704,6 +731,14 @@
             }
         });
 
+        // Preloader
+        window.addEventListener('load', function() {
+            var preloader = document.getElementById('preloader');
+            preloader.style.opacity = '0';
+            setTimeout(function() {
+                preloader.style.display = 'none';
+            }, 500);
+        });
         
     </script>
 </body>
