@@ -130,19 +130,36 @@
             display: none;
         }
 
-        .stock-table {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .stock-table th, .stock-table td {
+        .stock-details dl.row dt {
+            font-weight: bold;
             padding: 10px;
-            text-align: left;
-        }
-
-        .stock-table th {
             background-color: var(--primary-color);
             color: white;
+            border-radius: 4px 0 0 4px;
+            margin-bottom: .5rem;
+            
+        }
+
+        .stock-details dl.row dd {
+            padding: 10px;
+            background-color: rgba(66, 153, 225, 0.1);
+            border-radius: 0 4px 4px 0;
+            margin-bottom: .5rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .stock-details dl.row dd:hover {
+            background-color: rgba(66, 153, 225, 0.2);
+        }
+
+        @media (min-width: 576px) {
+            .stock-details dl.row dt {
+                text-align: right;
+                border-radius: 4px 0 0 4px;
+            }
+            .stock-details dl.row dd {
+                border-left: none;
+            }
         }
 
         .label-small {
@@ -231,6 +248,13 @@
                 font-size: 1.5rem;
                 padding: 15px;
             }
+
+            /* Adjustments for details on mobile */
+            .stock-details dl.row dt,
+            .stock-details dl.row dd {
+                font-size: 0.85rem;
+                padding: 5px;
+            }
         }
     </style>
     <!-- Bootstrap JS and Popper.js CDN -->
@@ -274,19 +298,9 @@
             </div>
 
             <div id="stock-details-container" style="display: none;">
-                <table class="stock-table">
-                    <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Name</th>
-                            <th>Exchange</th>
-                            <th>Market Price</th>
-                        </tr>
-                    </thead>
-                    <tbody id="stock-details">
-                        <!-- Populated by JavaScript -->
-                    </tbody>
-                </table>
+                <div class="stock-details">
+                    <dl id="stock-details" class="row"></dl>
+                </div>
                 <div class="input-group mb-3">
                     <div>
                         <label for="buy-price" class="label-small">Buy Price</label>
@@ -361,12 +375,14 @@
                     // Populate stock details
                     const stockDetails = document.getElementById('stock-details');
                     stockDetails.innerHTML = `
-                        <tr>
-                            <td>${data.symbol}</td>
-                            <td>${data.name}</td>
-                            <td>${data.exchange}</td>
-                            <td>${data.currency} ${data.regularMarketPrice}</td>
-                        </tr>
+                        <dt class="col-sm-3 animate__animated animate__fadeInUp">Symbol</dt>
+                        <dd class="col-sm-9 animate__animated animate__fadeInUp">${data.symbol}</dd>
+                        <dt class="col-sm-3 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">Name</dt>
+                        <dd class="col-sm-9 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">${data.name}</dd>
+                        <dt class="col-sm-3 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">Exchange</dt>
+                        <dd class="col-sm-9 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">${data.exchange}</dd>
+                        <dt class="col-sm-3 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">Market Price</dt>
+                        <dd class="col-sm-9 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">${data.currency} ${data.regularMarketPrice}</dd>
                     `;
                     errorMessage.style.display = 'none';
                 } else {

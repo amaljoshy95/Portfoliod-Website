@@ -1,4 +1,3 @@
-import sqlite3
 from flask import session,render_template
 import functools
 import requests
@@ -16,11 +15,115 @@ def login_required(func):
     return wrapper
             
 
-def get_stock_data(symbol):
+##########################################################################################
+from get_stock_data import get_stock_data
+from scipy.optimize import newton
+from datetime import datetime, date
+import math
 
-    api_key = getenv("API_KEY_TWELVE_DATA")
-    url = f"https://api.twelvedata.com/time_series?apikey={api_key}&interval=1day&country=India&exchange=NSE&symbol={symbol}&type=stock&outputsize=20&previous_close=true&format=JSON"
+def xirr(cashflows, dates):
+    if len(cashflows) < 2:
+        return None
+    # Analytical for exactly 2 cashflows
+    if len(cashflows) == 2:
+        cost = -cashflows[0]
+        value = cashflows[1]
+        days = (dates[1] - dates[0]).days
+        if days <= 0 or cost <= 0 or value < 0:
+            return None
+        year_frac = days / 365.25
+        ratio = value / cost
+        if ratio <= 0:
+            return -1.0
+        try:
+            r = math.pow(ratio, 1.0 / year_frac) - 1.0
+            if math.isnan(r) or math.isinf(r):
+                return None
+            return r
+        except (ValueError, OverflowError):
+            return None
+    # Numerical for more cashflows
+    else:
+        def npv(r):
+            total = 0.0
+            for i, cf in enumerate(cashflows):
+                days_diff = (dates[i] - dates[0]).days / 365.25
+                total += cf / (1 + r) ** days_diff
+            return total
+        try:
+            return newton(npv, x0=0.0)
+        except RuntimeError:
+            return None
 
-    response = requests.get(url=url, verify=False).json()
-    return response
+def calc_xirr(tdata):
+    result = {}
+    current_date = date.today()
+    # Group by symbol
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for row in tdata:
+        symbol = row["symbol"]
+        groups[symbol].append(row)
+    
+    for symbol, rows in groups.items():
+        cashflows = []
+        dates = []
+        total_shares = 0
+        valid = True
+        for row in rows:
+            price = row["price"]
+            shares = row["shares"]
+            date_str = row["date"]
+            try:
+                purchase_date = datetime.strptime(date_str, '%d-%m-%Y').date()
+            except ValueError:
+                valid = False
+                break
+            if purchase_date >= current_date or shares <= 0:
+                valid = False
+                break
+            cost = price * shares
+            cashflows.append(-cost)
+            dates.append(purchase_date)
+            total_shares += shares
+        
+        if not valid or total_shares <= 0:
+            result[symbol] = None
+            continue
+        
+        try:
+            current_price = float(get_stock_data(symbol + ".NS")["regularMarketPrice"])
+        except:
+            result[symbol] = None
+            continue
+        
+        current_value = current_price * total_shares
+        cashflows.append(current_value)
+        dates.append(current_date)
+        
+        # Sort by date (in case rows not ordered)
+        sorted_pairs = sorted(zip(dates, cashflows))
+        dates = [d for d, c in sorted_pairs]
+        cashflows = [c for d, c in sorted_pairs]
+        
+        result[symbol] = xirr(cashflows, dates)
+    
+    return result
 
+
+
+if __name__ == "__main__":
+
+    import sqlite3
+    conn = sqlite3.connect("users.db",check_same_thread=False)
+
+    # Make the fetchall() returns list of dict like row elements instead of list of tuples.
+    conn.row_factory = sqlite3.Row 
+    cur = conn.cursor()
+
+    cur.execute("SELECT symbol, AVG(price) as price, SUM(shares) AS shares, date FROM holdings WHERE user_id=? GROUP BY symbol,date",(5,))
+    tdata = cur.fetchall()
+
+    xirr = calc_xirr(tdata)
+
+    print(xirr)

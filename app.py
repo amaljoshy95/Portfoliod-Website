@@ -2,7 +2,7 @@ from flask import Flask,send_file,render_template,redirect,request,session,url_f
 from werkzeug.security import generate_password_hash,check_password_hash
 from dotenv import load_dotenv
 from os import getenv
-from helpers import login_required,get_stock_data
+from helpers import login_required,calc_xirr
 from datetime import date,datetime
 from get_stock_data import get_stock_data
 
@@ -52,11 +52,15 @@ def index():
     
     today = datetime.today().strftime("%d-%m-%Y")
 
-    cur.execute("SELECT symbol, AVG(price) as price, SUM(shares) AS shares, date FROM holdings WHERE user_id=? GROUP BY date",(user_id,))
+    #tdata is just used for CAGR calculation in index.html / Also used in xirr calculation
+    #AVG and SUM and GROUP By used to acc for same day purchase of same stock 
+    cur.execute("SELECT symbol, AVG(price) as price, SUM(shares) AS shares, date FROM holdings WHERE user_id=? GROUP BY symbol,date",(user_id,))
     tdata = cur.fetchall()
 
+    xirr = calc_xirr(tdata)
+
     return render_template("index.html",hdata=hdata, get_stock_data=get_stock_data,\
-                             today = today, tdata = tdata)
+                             today = today, tdata = tdata, xirr=xirr)
 
 
 

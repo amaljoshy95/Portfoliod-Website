@@ -453,10 +453,7 @@
                     <div class="accordion-body">
                         <div class="animate__animated animate__fadeIn">
                             <div class="row details-row">
-                                <div class="col">
-                                    <small class="label-small d-block">First Buy Date</small>
-                                    {{hd.date}}
-                                </div>
+                                
                                 <div class="col">
                                     <small class="label-small d-block">Total Invested</small>
                                     {{(hd.shares*hd.price)|round(2)}}
@@ -467,8 +464,13 @@
                                 </div>
                                 <div class="col">
                                     <small class="label-small d-block">Average CAGR</small>
-                                    <div id="avg_cagr{{item_id}}"></div>
+                                    <div id="avg_cagr{{item_id}}"%></div>
                                 </div>
+                                <div class="col">
+                                    <small class="label-small d-block">XIRR</small>
+                                    {{(xirr[hd.symbol]*100) | round(1)}}
+                                </div>
+
                             </div>
 
                             <!--Transaction table in the second row-->
@@ -488,7 +490,7 @@
 
                                     <tbody>
                                     
-                                    {% set ns = namespace(cagr_sum=0, valid_transactions=0) %}
+                                    {% set ns = namespace(cagr_sum=0, valid_transactions=0, total_inv=0) %}
                                     {% for td in tdata %}
                                     {% if td.symbol == hd.symbol %}
                                     <tr>
@@ -508,7 +510,8 @@
                                             {% set beginning_value = td.price %}
                                             {% if years > 0 and beginning_value > 0 %}
                                                 {% set cagr = (((ending_value / beginning_value) ** (1 / years) - 1) * 100) %}
-                                                {% set ns.cagr_sum = ns.cagr_sum + cagr %}
+                                                {% set ns.cagr_sum = ns.cagr_sum + (cagr*td.shares*td.price) %}
+                                                {% set ns.total_inv = ns.total_inv + (td.shares*td.price) %}
                                                 {% set ns.valid_transactions = ns.valid_transactions + 1 %}
                                                 {{ cagr|round(1) }}
                                             {% else %}
@@ -518,7 +521,7 @@
                                         </tr>
                                         {% endif %}
                                         {% endfor %}
-                                        {% set avg_cagr = (ns.cagr_sum / ns.valid_transactions)|round(1) if ns.valid_transactions > 0 else "NA" %}
+                                        {% set avg_cagr = (ns.cagr_sum / ns.total_inv)|round(1) if ns.total_inv > 0 else "NA" %}
                                         
                                         
                                         <script>
