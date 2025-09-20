@@ -2,7 +2,7 @@ import requests
 import json
 from datetime import datetime
 
-def get_stock_data(symbol, range="1mo", interval="1d"):
+def get_stock_data(symbol, range="max", interval="1d"):
 
     try:
         nse_symbol = symbol+".NS"

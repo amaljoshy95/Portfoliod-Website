@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Stock Price Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div style="width: 800px; margin: auto;">
+    <select id="viewSelector">
+      <option value="daily" selected>Daily</option>
+      <option value="monthly">Monthly</option>
+      <option value="yearly">Yearly</option>
+    </select>
+    <canvas id="stockChart"></canvas>
+  </div>
+
+  <script>
+    // Example daily data (YYYY-mm-dd, price)
+    const rawData = [
+      { date: "2025-08-01", value: 1413.8 },
+      { date: "2025-08-02", value: 1420.2 },
+      { date: "2025-08-03", value: 1408.4 },
+      { date: "2025-09-01", value: 1432.0 },
+      { date: "2025-09-10", value: 1441.5 },
+      { date: "2025-09-20", value: 1450.1 },
+      { date: "2026-01-05", value: 1500.0 }
+    ];
+
+    // Format YYYY-mm-dd -> dd-mm-YYYY
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString("en-GB"); // dd/mm/yyyy
+    }
+
+    // Aggregate by month
+    function aggregateMonthly(data) {
+      const grouped = {};
+      data.forEach(d => {
+        const date = new Date(d.date);
+        const key = `${date.getFullYear()}-${date.getMonth()+1}`; // YYYY-M
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(d.value);
+      });
+      return Object.entries(grouped).map(([key, values]) => {
+        const [y, m] = key.split("-");
+        const avg = values.reduce((a,b)=>a+b,0) / values.length;
+        return {
+          label: `${m.padStart(2,"0")}-${y}`, // mm-YYYY
+          value: avg
+        };
+      });
+    }
+
+    // Aggregate by year
+    function aggregateYearly(data) {
+      const grouped = {};
+      data.forEach(d => {
+        const date = new Date(d.date);
+        const key = date.getFullYear();
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(d.value);
+      });
+      return Object.entries(grouped).map(([year, values]) => {
+        const avg = values.reduce((a,b)=>a+b,0) / values.length;
+        return { label: year, value: avg };
+      });
+    }
+
+    let chart;
+
+    function createChart(ctx, labels, data, stockSymbol) {
+      if (chart) chart.destroy(); // clear old chart
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: `${stockSymbol} Price History`,
+            data: data,
+            borderColor: '#003087',
+            backgroundColor: 'rgba(0, 48, 135, 0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true, position: 'top' },
+            tooltip: { enabled: true, mode: 'index', intersect: false }
+          },
+          scales: {
+            y: { beginAtZero: false, grid: { color: '#e0e0e0' } },
+            x: { grid: { display: false } }
+          },
+          animation: { duration: 1000, easing: 'easeInOutQuad' }
+        }
+      });
+    }
+
+    function updateChart(view) {
+      let labels, data;
+      if (view === "daily") {
+        labels = rawData.map(d => formatDate(d.date));
+        data = rawData.map(d => d.value);
+      } else if (view === "monthly") {
+        const agg = aggregateMonthly(rawData);
+        labels = agg.map(d => d.label);
+        data = agg.map(d => d.value);
+      } else if (view === "yearly") {
+        const agg = aggregateYearly(rawData);
+        labels = agg.map(d => d.label);
+        data = agg.map(d => d.value);
+      }
+      createChart(document.getElementById("stockChart"), labels, data, "RELIANCE");
+    }
+
+    // Init
+    updateChart("daily");
+
+    // Selector listener
+    document.getElementById("viewSelector").addEventListener("change", (e) => {
+      updateChart(e.target.value);
+    });
+  </script>
+</body>
+</html>

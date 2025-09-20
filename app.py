@@ -64,11 +64,11 @@ def index():
 
 
 
-@app.route("/stock_detail_api/<symbol>")
+@app.route("/stock_detail_api/<symbol>/<view>")
 @login_required
-def stock_detail_api(symbol):
+def stock_detail_api(symbol,view):
 
-    response = get_stock_data(symbol)
+    response = get_stock_data(symbol,range=view)
     return jsonify(response)
 
 
@@ -116,7 +116,9 @@ def buy():
 def logout():
 
     session.clear()
-    return redirect("/login")
+
+    return render_template("demo.html")
+    #return redirect("/login")
 
 
 

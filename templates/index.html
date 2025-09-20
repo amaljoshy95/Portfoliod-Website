@@ -246,6 +246,19 @@
     .transaction-table th:nth-child(7),
     .transaction-table td:nth-child(7) { width: 12%; } /* CAGR */
 
+    .chart-controls {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .chart-controls button {
+        margin: 0 5px;
+    }
+
+    .chart-controls button.active {
+        background-color: var(--primary-color);
+    }
+
     @media (max-width: 768px) {
         #sidebar {
             left: -100%;
@@ -375,6 +388,8 @@
 </style>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/dist/date-fns.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <!-- Bootstrap JS and Popper.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
@@ -539,6 +554,13 @@
                             <!--Chart toggle button-->
                             <button class="btn btn-primary toggle-chart" data-chart-id="{{item_id}}" data-symbol={{hd.symbol}}>Show Chart</button>
                             <div class="chart-container" id="chart-{{item_id}}" style="display: none;">
+                                <div class="chart-controls">
+                                    <button class="btn btn-secondary" data-view="1mo">1M</button>
+                                    <button class="btn btn-secondary" data-view="3mo">3M</button>
+                                    <button class="btn btn-secondary" data-view="1y">1Y</button>
+                                    <button class="btn btn-secondary" data-view="3y">3Y</button>
+                                    <button class="btn btn-secondary" data-view="max">Max</button>
+                                </div>
                                 <canvas id="chartCanvas-{{item_id}}"></canvas>
                             </div>
                         </div>
@@ -551,14 +573,14 @@
 
     <script>
         // Chart creation with enhanced options
-        function createChart(ctx, labels, data, stockSymbol) {
+        
+        function createChart(ctx, dataPoints, stockSymbol) {
             return new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
                     datasets: [{
                         label: `${stockSymbol} Price History`,
-                        data: data,
+                        data: dataPoints,
                         borderColor: '#003087',
                         backgroundColor: 'rgba(0, 48, 135, 0.1)',
                         fill: true,
@@ -569,7 +591,7 @@
                     responsive: true,
                     plugins: {
                         legend: {
-                            display: true,
+                            display: false,
                             position: 'top'
                         },
                         tooltip: {
@@ -579,15 +601,17 @@
                         }
                     },
                     scales: {
+                        x: {
+                            type: 'time',
+                            time: {},
+                            grid: {
+                                display: false
+                            }
+                        },
                         y: {
                             beginAtZero: false,
                             grid: {
                                 color: '#e0e0e0'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
                             }
                         }
                     },
@@ -599,7 +623,18 @@
             });
         }
 
+        async function loadData(chartId, stockSymbol, view, chart) {
+            const response = await fetch(`stock_detail_api/${stockSymbol}/${view}`);
+            const resp_data = await response.json();   // parse JSON
+            const dataPoints = resp_data.history.map(item => ({
+                x: new Date(item.date),
+                y: item.price
+            }));
 
+            chart.data.datasets[0].data = dataPoints;
+            chart.update();
+        }
+        
         // Toggle chart visibility
 
         async function toggleChart(button) {
@@ -616,27 +651,34 @@
                 const ctx = document.getElementById(canvasId).getContext('2d');
                 if (!window.charts) window.charts = {};
                 if (!window.charts[chartId]) {
-                    
-                    const response = await fetch(`stock_detail_api/${stockSymbol}`);
+                    const initialView = '1mo';
+                    const response = await fetch(`stock_detail_api/${stockSymbol}/${initialView}`);
                     const resp_data = await response.json();   // parse JSON
-                    const labels = resp_data.history.map(item => item.date);
-                    const data = resp_data.history.map(item => item.price);
+                    const dataPoints = resp_data.history.map(item => ({
+                        x: new Date(item.date),
+                        y: item.price
+                    }));
                     
-                    window.charts[chartId] = createChart(ctx, labels, data, stockSymbol);
+                    const chart = createChart(ctx, dataPoints, stockSymbol);
+                    window.charts[chartId] = chart;
+
+                    const buttons = chartContainer.querySelectorAll('.chart-controls button');
+                    buttons.forEach(btn => {
+                        if (btn.dataset.view === initialView) {
+                            btn.classList.add('active');
+                        }
+                        btn.addEventListener('click', async (e) => {
+                            buttons.forEach(b => b.classList.remove('active'));
+                            e.target.classList.add('active');
+                            const view = e.target.dataset.view;
+                            await loadData(chartId, stockSymbol, view, chart);
+                        });
+                    });
                 }
             } else {
                 chartContainer.classList.remove('animate__fadeIn');
             }
         }
-
-
-
-
-
-
-
-
-
 
 
         // Initialize chart buttons
