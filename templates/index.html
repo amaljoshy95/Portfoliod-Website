@@ -494,7 +494,11 @@
                     <div class="accordion-body">
                         <div class="animate__animated animate__fadeIn">
                             <div class="row details-row">
-                                
+
+                                <div class="col">
+                                    <small class="label-small d-block">Full Name</small>
+                                    {{cd.name}}
+                                </div>
                                 <div class="col">
                                     <small class="label-small d-block">Total Invested</small>
                                     {{(hd.shares*hd.price)|round(2)}}
@@ -503,7 +507,7 @@
                                     <small class="label-small d-block">Current Value</small>
                                     {{(cd.regularMarketPrice*hd.shares)|round(2)}}
                                 </div>
-                                <div class="col">
+                                <div class="col" style="display:none;">  <!--Hidden as it is used in some other part-->
                                     <small class="label-small d-block">Average CAGR</small>
                                     <div id="avg_cagr{{item_id}}"%></div>
                                 </div>
