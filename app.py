@@ -5,6 +5,7 @@ from os import getenv
 from helpers import login_required,calc_xirr
 from datetime import date,datetime
 from get_stock_data import get_stock_data
+import requests
 
 load_dotenv()
 Flask.secret_key = getenv("FLASK_SECRET_KEY")
@@ -39,6 +40,23 @@ conn.commit()
 @app.template_filter('strptime')
 def strptime_filter(date_string, format="%d-%m-%Y"):
     return datetime.strptime(date_string, format)
+
+
+
+
+@app.route("/search/<query>/")
+@login_required
+def search(query):
+    
+    url = f"https://query2.finance.yahoo.com/v1/finance/search?q={query}"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    data = response.json()
+
+    return data
+
+
 
 
 @app.route("/")

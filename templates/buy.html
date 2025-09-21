@@ -256,6 +256,21 @@
                 padding: 5px;
             }
         }
+
+        /* Additional styles for colorful results */
+        .table-colorful thead th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .table-colorful tbody tr:nth-child(odd) {
+            background-color: #e3f2fd; /* light blue */
+        }
+        .table-colorful tbody tr:nth-child(even) {
+            background-color: #f1f8e9; /* light green */
+        }
+        .table-colorful tbody tr:hover {
+            background-color: #fff3e0; /* light orange */
+        }
     </style>
     <!-- Bootstrap JS and Popper.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
@@ -297,6 +312,10 @@
                 <div id="error-message" class="error-message"></div>
             </div>
 
+            <div id="unknown-symbol" class="mt-3">
+                <p class="small text-muted">If you don't know the symbol, <a href="#" id="show-search">click here</a>.</p>
+            </div>
+
             <div id="stock-details-container" style="display: none;">
                 <div class="stock-details">
                     <dl id="stock-details" class="row"></dl>
@@ -317,6 +336,19 @@
                 </div>
                 <button id="buy-stock" class="btn btn-primary">Buy</button>
                 <div id="buy-error-message" class="error-message"></div>
+            </div>
+
+            <div id="search-container" style="display: none;">
+                <h3 class="mb-4">Search Stock or Mutual Fund Symbol</h3>
+                <form id="searchForm">
+                    <div class="mb-3">
+                        <label for="stockName" class="form-label">Stock/Mutual Fund Name</label>
+                        <input type="text" class="form-control" id="stockName" placeholder="Enter name to search" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    <div id="errorMessage" class="error-message"></div>
+                </form>
+                <div id="results" class="mt-4"></div>
             </div>
         </div>
     </div>
@@ -340,25 +372,32 @@
             }
         });
 
+        // Show search container
+        document.getElementById('show-search').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('search-container').style.display = 'block';
+        });
+
         // Handle stock symbol validation and details display
         const getDetailsButton = document.getElementById('get-details');
         const stockInputContainer = document.getElementById('stock-input-container');
         const stockDetailsContainer = document.getElementById('stock-details-container');
-        const errorMessage = document.getElementById('error-message');
+        const errorMessageDetails = document.getElementById('error-message');
         const stockSymbolInput = document.getElementById('stock-symbol');
         const buyButton = document.getElementById('buy-stock');
         const buyPriceInput = document.getElementById('buy-price');
         const sharesInput = document.getElementById('shares');
         const buyDateInput = document.getElementById('buy-date');
         const buyErrorMessage = document.getElementById('buy-error-message');
+        const unknownsymbol = document.getElementById('unknown-symbol');
 
         getDetailsButton.addEventListener('click', async () => {
             const symbol = stockSymbolInput.value.trim().toUpperCase();
             if (!symbol) {
-                errorMessage.textContent = 'Please enter a stock symbol';
-                errorMessage.style.display = 'block';
-                errorMessage.classList.add('animate__animated', 'animate__shakeX');
-                setTimeout(() => errorMessage.classList.remove('animate__shakeX'), 1000);
+                errorMessageDetails.textContent = 'Please enter a stock symbol';
+                errorMessageDetails.style.display = 'block';
+                errorMessageDetails.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => errorMessageDetails.classList.remove('animate__shakeX'), 1000);
                 return;
             }
 
@@ -369,6 +408,7 @@
                 if (response.ok) {
                     // Hide input and show details
                     stockInputContainer.style.display = 'none';
+                    unknownsymbol.style.display='none';
                     stockDetailsContainer.style.display = 'block';
                     stockDetailsContainer.classList.add('animate__animated', 'animate__fadeIn');
 
@@ -384,18 +424,18 @@
                         <dt class="col-sm-3 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">Market Price</dt>
                         <dd class="col-sm-9 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">${data.currency} ${data.regularMarketPrice}</dd>
                     `;
-                    errorMessage.style.display = 'none';
+                    errorMessageDetails.style.display = 'none';
                 } else {
-                    errorMessage.textContent = data.error || 'Invalid stock symbol';
-                    errorMessage.style.display = 'block';
-                    errorMessage.classList.add('animate__animated', 'animate__shakeX');
-                    setTimeout(() => errorMessage.classList.remove('animate__shakeX'), 1000);
+                    errorMessageDetails.textContent = data.error || 'Invalid stock symbol';
+                    errorMessageDetails.style.display = 'block';
+                    errorMessageDetails.classList.add('animate__animated', 'animate__shakeX');
+                    setTimeout(() => errorMessageDetails.classList.remove('animate__shakeX'), 1000);
                 }
             } catch (error) {
-                errorMessage.textContent = 'Error fetching stock details';
-                errorMessage.style.display = 'block';
-                errorMessage.classList.add('animate__animated', 'animate__shakeX');
-                setTimeout(() => errorMessage.classList.remove('animate__shakeX'), 1000);
+                errorMessageDetails.textContent = 'Error fetching stock details';
+                errorMessageDetails.style.display = 'block';
+                errorMessageDetails.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => errorMessageDetails.classList.remove('animate__shakeX'), 1000);
             }
         });
 
@@ -472,6 +512,89 @@
                 buyErrorMessage.style.display = 'block';
                 buyErrorMessage.classList.add('animate__animated', 'animate__shakeX');
                 setTimeout(() => buyErrorMessage.classList.remove('animate__shakeX'), 1000);
+            }
+        });
+
+        const form = document.getElementById('searchForm');
+        const errorMessage = document.getElementById('errorMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('stockName').value.trim();
+            if (!query) {
+                errorMessage.textContent = 'Please enter a valid name.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            errorMessage.style.display = 'none';
+            try {
+                const response = await fetch(`search/${encodeURIComponent(query)}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                const quotes = data.quotes || [];
+
+                if (quotes.length === 0) {
+                    errorMessage.textContent = 'No results found.';
+                    errorMessage.style.display = 'block';
+                    document.getElementById('results').innerHTML = '';
+                    return;
+                }
+
+                // Create table
+                const table = document.createElement('table');
+                table.className = 'table table-hover table-bordered table-colorful';
+
+                // Table header
+                const thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr>
+                        <th>Long Name</th>
+                        <th>Symbol</th>
+                        <th>Exchange</th>
+                        <th>Quote Type</th>
+                    </tr>
+                `;
+                table.appendChild(thead);
+
+                // Table body
+                const tbody = document.createElement('tbody');
+                quotes.forEach(quote => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${quote.longname || quote.shortname || '-'}</td>
+                        <td>${quote.symbol || '-'}</td>
+                        <td>${quote.exchange || '-'}</td>
+                        <td>${quote.quoteType || '-'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                table.appendChild(tbody);
+
+                // Replace results with table
+                const results = document.getElementById('results');
+                results.innerHTML = '';
+                results.appendChild(table);
+
+                // Make rows clickable to populate stock symbol input and hide search container
+                const rows = tbody.querySelectorAll('tr');
+                rows.forEach(row => {
+                    row.style.cursor = 'pointer';
+                    row.addEventListener('click', () => {
+                        const symbol = row.querySelector('td:nth-child(2)').textContent;
+                        document.getElementById('stock-symbol').value = symbol;
+                        document.getElementById('search-container').style.display = 'none';
+                        // Optionally clear the search input and results for next time
+                        document.getElementById('stockName').value = '';
+                        results.innerHTML = '';
+                    });
+                });
+
+            } catch (error) {
+                console.error(error);
+                errorMessage.textContent = 'An error occurred while searching.';
+                errorMessage.style.display = 'block';
             }
         });
     </script>

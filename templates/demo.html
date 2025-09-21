@@ -263,9 +263,115 @@
     <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+
 <body>
-  
+    <div id="header">
+        <i id="hamburger" class="fa fa-bars"></i>
+        <h2>Stock Trading App</h2>
+    </div>
 
+    <nav id="sidebar">
+        <h2>Menu</h2>
+        <ul>
+            <li><a href="#"><i class="fa fa-home"></i> Dashboard</a></li>
+            <li><a href="#"><i class="fa fa-shopping-cart"></i> Buy Stock</a></li>
+            <li><a href="#"><i class="fa fa-line-chart"></i> Portfolio</a></li>
+            <li><a href="#"><i class="fa fa-history"></i> History</a></li>
+            <li><a href="#"><i class="fa fa-cog"></i> Settings</a></li>
+        </ul>
+    </nav>
 
+    <div id="main">
+        <div class="card animate__animated animate__fadeIn">
+            <h3 class="mb-4">Search Stock or Mutual Fund Symbol</h3>
+            <form id="searchForm">
+                <div class="mb-3">
+                    <label for="stockName" class="form-label">Stock/Mutual Fund Name</label>
+                    <input type="text" class="form-control" id="stockName" placeholder="Enter name to search" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
+                <div id="errorMessage" class="error-message"></div>
+            </form>
+            <div id="results" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        const form = document.getElementById('searchForm');
+        const errorMessage = document.getElementById('errorMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('stockName').value.trim();
+            if (!query) {
+                errorMessage.textContent = 'Please enter a valid name.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            errorMessage.style.display = 'none';
+            try {
+                const response = await fetch(`search/${encodeURIComponent(query)}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                const quotes = data.quotes || [];
+
+                if (quotes.length === 0) {
+                    errorMessage.textContent = 'No results found.';
+                    errorMessage.style.display = 'block';
+                    document.getElementById('results').innerHTML = '';
+                    return;
+                }
+
+                // Create table
+                const table = document.createElement('table');
+                table.className = 'table table-striped'; // bootstrap styling
+
+                // Table header
+                const thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr>
+                        <th>Long Name</th>
+                        <th>Symbol</th>
+                        <th>Exchange</th>
+                        <th>Quote Type</th>
+                    </tr>
+                `;
+                table.appendChild(thead);
+
+                // Table body
+                const tbody = document.createElement('tbody');
+                quotes.forEach(quote => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${quote.longname || quote.shortname || '-'}</td>
+                        <td>${quote.symbol || '-'}</td>
+                        <td>${quote.exchange || '-'}</td>
+                        <td>${quote.quoteType || '-'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                table.appendChild(tbody);
+
+                // Replace results with table
+                const results = document.getElementById('results');
+                results.innerHTML = '';
+                results.appendChild(table);
+
+            } catch (error) {
+                console.error(error);
+                errorMessage.textContent = 'An error occurred while searching.';
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
 </body>
+
 </html>

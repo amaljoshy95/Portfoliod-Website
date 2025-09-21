@@ -4,6 +4,12 @@ from datetime import datetime
 
 def get_stock_data(symbol, range="1mo", interval="1d"):
 
+    if symbol.endswith(".NS"):
+        symbol = symbol.removesuffix(".NS")
+    elif symbol.endswith(".BO"):
+        symbol = symbol.removesuffix(".BO")
+
+
     try:
         nse_symbol = symbol+".NS"
         url = f"https://query1.finance.yahoo.com/v8/finance/chart/{nse_symbol}?range={range}&interval={interval}"
