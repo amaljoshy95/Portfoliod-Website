@@ -13,7 +13,7 @@ def get_stock_data(symbol, range="max", interval="1d"):
         data = response.json()
     except:
         bse_symbol = symbol+".BO"
-        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range={range}&interval={interval}"
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{bse_symbol}?range={range}&interval={interval}"
         headers = {"User-Agent": "Mozilla/5.0"}
         response = requests.get(url, headers=headers)
         response.raise_for_status()

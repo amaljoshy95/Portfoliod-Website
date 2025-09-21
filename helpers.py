@@ -92,7 +92,7 @@ def calc_xirr(tdata):
             continue
         
         try:
-            current_price = float(get_stock_data(symbol + ".NS")["regularMarketPrice"])
+            current_price = float(get_stock_data(symbol)["regularMarketPrice"]) #here
         except:
             result[symbol] = None
             continue

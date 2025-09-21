@@ -509,7 +509,7 @@
                                 </div>
                                 <div class="col">
                                     <small class="label-small d-block">XIRR</small>
-                                    {{(xirr[hd.symbol]*100) | round(1)}}
+                                    {{ (xirr[hd.symbol] * 100) | round(1) if xirr[hd.symbol] is not none else "" }}
                                 </div>
 
                             </div>

@@ -363,7 +363,7 @@
             }
 
             try {
-                const response = await fetch(`/stock_detail_api/${symbol}`);
+                const response = await fetch(`/stock_detail_api/${symbol}/"1mo"`);
                 const data = await response.json();
 
                 if (response.ok) {
