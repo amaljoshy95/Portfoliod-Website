@@ -459,8 +459,8 @@
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{item_id}}" aria-expanded="false" aria-controls="collapse{{item_id}}">
                         <div class="row w-100">
                             <div class="col">
-                                <small class="label-small d-block">Stock</small>
-                                {{hd.symbol}}
+                                <small class="label-small d-block">Stock Name</small>
+                                {{cd.name}}
                             </div>
                             <div class="col">
                                 <small class="label-small d-block">Avg. Buy Price</small>
@@ -496,16 +496,16 @@
                             <div class="row details-row">
 
                                 <div class="col">
-                                    <small class="label-small d-block">Full Name</small>
-                                    {{cd.name}}
+                                    <small class="label-small d-block">Symbol</small>
+                                    {{hd.symbol}}
                                 </div>
                                 <div class="col">
                                     <small class="label-small d-block">Total Invested</small>
-                                    {{(hd.shares*hd.price)|round(2)}}
+                                    {{(hd.shares*hd.price)|round(1)}}
                                 </div>
                                 <div class="col">
                                     <small class="label-small d-block">Current Value</small>
-                                    {{(cd.regularMarketPrice*hd.shares)|round(2)}}
+                                    {{(cd.regularMarketPrice*hd.shares)|round(1)}}
                                 </div>
                                 <div class="col" style="display:none;">  <!--Hidden as it is used in some other part-->
                                     <small class="label-small d-block">Average CAGR</small>
@@ -513,7 +513,10 @@
                                 </div>
                                 <div class="col">
                                     <small class="label-small d-block">XIRR</small>
-                                    {{ (xirr[hd.symbol] * 100) | round(1) if xirr[hd.symbol] is not none else "" }}
+                                    {% set xirr_val = (xirr[hd.symbol] * 100) | round(1) if xirr[hd.symbol] is not none else none %}
+                                    {% set xirr_val = (xirr_val | float) if xirr is not none else none %}
+                                    {% set capped_xirr = (xirr_val|round(1) if xirr_val < 10000.0 else "Very High") if xirr is not none else none%}
+                                    {{ capped_xirr }}{{'%' if capped_xirr != "Very High" }}
                                 </div>
 
                             </div>
@@ -526,7 +529,7 @@
                                             <th>Date</th>
                                             <th>No of Shares</th>
                                             <th>Price</th>
-                                            <th>Total Value</th>
+                                            <th>Total Invested</th>
                                             <th>Profit/Loss</th>
                                             <th>%</th>
                                             <th>CAGR</th>
@@ -558,7 +561,8 @@
                                                 {% set ns.cagr_sum = ns.cagr_sum + (cagr*td.shares*td.price) %}
                                                 {% set ns.total_inv = ns.total_inv + (td.shares*td.price) %}
                                                 {% set ns.valid_transactions = ns.valid_transactions + 1 %}
-                                                {{ cagr|round(1) }}
+                                                {% set cagr_adj = cagr|round(1) if cagr < 10000000 else "Very High" %}
+                                                {{ cagr_adj }}
                                             {% else %}
                                                 {{ "NA" }}
                                             {% endif %}

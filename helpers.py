@@ -64,6 +64,8 @@ def calc_xirr(tdata):
     for row in tdata:
         symbol = row["symbol"]
         groups[symbol].append(row)
+        if symbol=="INFY":
+            print("infy data",row["price"],row["shares"],row["date"])
     
     for symbol, rows in groups.items():
         cashflows = []
@@ -107,10 +109,10 @@ def calc_xirr(tdata):
         cashflows = [c for d, c in sorted_pairs]
         
         result[symbol] = xirr(cashflows, dates)
-    
+    print(result)
     return result
 
-
+ 
 
 if __name__ == "__main__":
 
@@ -121,7 +123,7 @@ if __name__ == "__main__":
     conn.row_factory = sqlite3.Row 
     cur = conn.cursor()
 
-    cur.execute("SELECT symbol, AVG(price) as price, SUM(shares) AS shares, date FROM holdings WHERE user_id=? GROUP BY symbol,date",(5,))
+    cur.execute("SELECT symbol, AVG(price) as price, SUM(shares) AS shares, date FROM holdings WHERE user_id=? AND symbol=?",(5,"INFY"))
     tdata = cur.fetchall()
 
     xirr = calc_xirr(tdata)

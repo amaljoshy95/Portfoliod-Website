@@ -101,6 +101,10 @@ def buy():
     data = request.get_json()
 
     symbol = data.get("symbol")
+    if symbol.endswith(".NS"):
+        symbol = symbol.removesuffix(".NS")
+    elif symbol.endswith(".BO"):
+        symbol = symbol.removesuffix(".BO")
     price = data.get("buyPrice")
     shares = data.get("shares")
 
