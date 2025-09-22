@@ -18,4 +18,31 @@ def mutual_fund_data():
     hist = fund.history(period="1y")
     print(hist)
 
-mutual_fund_data()
+
+import requests
+def etmoneysearch():
+
+    query = "pgim"
+    url = f"https://www.moneycontrol.com/mccode/common/autosuggestion_solr.php?classic=false&query={query}&type=2&format=json&main=false"
+    ""
+
+    payload = {"query": "pgim",
+               
+               }   # replace with stock name you want to search
+    
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0"  # some APIs require a UA
+    }
+
+    response = requests.get(url, headers=headers)
+
+    # Raise error if request failed
+    response.raise_for_status()
+
+    # Response is usually JSON
+    data = response.json()
+    data = [k["name"] for k in data]
+    print(data)
+
+etmoneysearch()        

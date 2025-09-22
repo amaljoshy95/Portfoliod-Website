@@ -301,12 +301,12 @@
     </div>
 
     <div id="main" class="animate__animated animate__fadeIn">
-        <h1>Buy Stock</h1>
+        <h1>Buy Stock/Mutual Fund</h1>
         <div class="card animate__animated animate__fadeIn">
             <div id="stock-input-container">
                 <div class="mb-3">
-                    <label for="stock-symbol" class="label-small">Stock Symbol</label>
-                    <input type="text" class="form-control" id="stock-symbol" placeholder="Enter stock symbol (e.g., INFY)" style="max-width: 300px;">
+                    <label for="stock-symbol" class="label-small">Stock or Mutual Fund Symbol</label>
+                    <input type="text" class="form-control" id="stock-symbol" placeholder="Enter Stock/MF symbol (e.g., INFY)" style="max-width: 300px;">
                 </div>
                 <button id="get-details" class="btn btn-primary">Get Details</button>
                 <div id="error-message" class="error-message"></div>
@@ -402,7 +402,7 @@
             }
 
             try {
-                const response = await fetch(`/stock_detail_api/${symbol}/"1mo"`);
+                const response = await fetch(`/stock_detail_api/${symbol}/1mo`);
                 const data = await response.json();
 
                 if (response.ok) {

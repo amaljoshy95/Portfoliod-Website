@@ -48,8 +48,8 @@ def strptime_filter(date_string, format="%d-%m-%Y"):
 @login_required
 def search(query):
     
-    url = f"https://query2.finance.yahoo.com/v1/finance/search?q={query}"
-    headers = {"User-Agent": "Mozilla/5.0"}
+    url = f"https://query2.finance.yahoo.com/v1/finance/search?q={query}&quotesCount=20"
+    headers = {"User-Agent": "Mozilla/5.0"} 
     response = requests.get(url, headers=headers)
     response.raise_for_status()
     data = response.json()
@@ -86,7 +86,7 @@ def index():
 @login_required
 def stock_detail_api(symbol,view):
 
-    response = get_stock_data(symbol,range=view)
+    response = get_stock_data(symbol,viewrange=view)
     return jsonify(response)
 
 

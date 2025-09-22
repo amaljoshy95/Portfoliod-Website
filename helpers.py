@@ -64,8 +64,6 @@ def calc_xirr(tdata):
     for row in tdata:
         symbol = row["symbol"]
         groups[symbol].append(row)
-        if symbol=="INFY":
-            print("infy data",row["price"],row["shares"],row["date"])
     
     for symbol, rows in groups.items():
         cashflows = []
@@ -109,7 +107,7 @@ def calc_xirr(tdata):
         cashflows = [c for d, c in sorted_pairs]
         
         result[symbol] = xirr(cashflows, dates)
-    print(result)
+    #print(result)
     return result
 
  

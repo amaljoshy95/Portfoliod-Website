@@ -2,34 +2,72 @@ import requests
 import json
 from datetime import datetime
 
-def get_stock_data(symbol, range="1mo", interval="1d"):
+def get_stock_data(symbol, viewrange="1mo", interval="1d"):
 
     if symbol.endswith(".NS"):
         symbol = symbol.removesuffix(".NS")
     elif symbol.endswith(".BO"):
         symbol = symbol.removesuffix(".BO")
 
+    symbol = symbol.strip()
 
     try:
-        nse_symbol = symbol+".NS"
-        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{nse_symbol}?range={range}&interval={interval}"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        data = response.json()
+        try:
+            nse_symbol = symbol+".NS"
+            base_url = f"https://query1.finance.yahoo.com/v8/finance/chart/{nse_symbol}"
+            params = {
+                    "range": viewrange,
+                    "interval": interval
+                    }       
+            headers = {"User-Agent": "Mozilla/5.0"}
+            response = requests.get(base_url, headers=headers, params=params)
+            #print("Final url",response.url)
+            response.raise_for_status()
+            data = response.json()
+
+        except:
+            nse_symbol = symbol+".BO"
+            base_url = f"https://query1.finance.yahoo.com/v8/finance/chart/{nse_symbol}"
+            params = {
+                    "range": viewrange,
+                    "interval": interval
+                    }       
+            headers = {"User-Agent": "Mozilla/5.0"}
+            response = requests.get(base_url, headers=headers, params=params)
+            #print("Final url",response.url)
+            response.raise_for_status()
+            data = response.json()
+
     except:
-        bse_symbol = symbol+".BO"
-        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{bse_symbol}?range={range}&interval={interval}"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        data = response.json()
+        try:
+            bse_symbol = symbol+".BO"
+            url = f"https://query1.finance.yahoo.com/v7/finance/spark?includePrePost=true&includeTimestamps=true&indicators=close&interval={interval}&range={viewrange}&symbols={bse_symbol}&lang=en-US&region=US"
+            #print(url)
+            headers = {"User-Agent": "Mozilla/5.0"}
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+        
+        except:
+            bse_symbol = symbol+".NS"
+            url = f"https://query1.finance.yahoo.com/v7/finance/spark?includePrePost=true&includeTimestamps=true&indicators=close&interval={interval}&range={viewrange}&symbols={bse_symbol}&lang=en-US&region=US"
+            #print(url)
+            headers = {"User-Agent": "Mozilla/5.0"}
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
 
     # Extract the result object
-    result = data["chart"]["result"][0]
-    meta = result["meta"]
-    timestamps = result["timestamp"]
-    closes = result["indicators"]["quote"][0]["close"]
+    try:
+        result = data["chart"]["result"][0]
+        meta = result["meta"]
+        timestamps = result["timestamp"]
+        closes = result["indicators"]["quote"][0]["close"]
+    except:
+        result = data["spark"]["result"][0]["response"][0]
+        meta = result["meta"]
+        timestamps = result["timestamp"]
+        closes = result["indicators"]["quote"][0]["close"]     
 
     # Format historical prices
     history = []
