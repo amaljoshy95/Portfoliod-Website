@@ -27,7 +27,7 @@ cur.execute("""CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY NOT NULL
 
 cur.execute("""CREATE TABLE IF NOT EXISTS holdings (id INTEGER PRIMARY KEY NOT NULL, symbol TEXT NOT NULL,
             shares NUMBER NOT NULL, price FLOAT, date TEXT, user_id INTEGER NOT NULL, 
-            sellprice FLOAT, selldate TEXT,
+            sellprice FLOAT, selldate TEXT, name TEXT NOT NULL,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)""")
 conn.commit()
 
@@ -40,6 +40,18 @@ conn.commit()
 @app.template_filter('strptime')
 def strptime_filter(date_string, format="%d-%m-%Y"):
     return datetime.strptime(date_string, format)
+
+@app.route("/sell")
+@login_required
+def sell():
+
+    user_id = session["user_id"]
+    cur.execute("SELECT symbol, name, SUM(shares) AS shares FROM holdings WHERE user_id=? GROUP BY symbol",(user_id,))
+    owned_stocks = cur.fetchall()
+    return render_template("sell.html", owned_stocks=owned_stocks)
+
+
+
 
 
 
@@ -109,6 +121,8 @@ def buy():
     shares = data.get("shares")
 
     buydate = data.get("buyDate")
+    name = data.get("name")
+    
     try:
         buydate_object = datetime.strptime(buydate, "%Y-%m-%d")
         buydate = buydate_object.strftime("%d-%m-%Y")
@@ -128,7 +142,7 @@ def buy():
     
     user_id = session["user_id"]
 
-    cur.execute("INSERT INTO holdings (symbol,shares,price,date,user_id) VALUES (?,?,?,?,?)",(symbol,shares,price,buydate,user_id))
+    cur.execute("INSERT INTO holdings (symbol,shares,price,date,user_id,name) VALUES (?,?,?,?,?,?)",(symbol,shares,price,buydate,user_id,name))
     conn.commit()
 
     return jsonify({}),200
