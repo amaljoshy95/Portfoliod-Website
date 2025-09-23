@@ -27,33 +27,69 @@ cur.execute("""CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY NOT NULL
 
 cur.execute("""CREATE TABLE IF NOT EXISTS holdings (id INTEGER PRIMARY KEY NOT NULL, symbol TEXT NOT NULL,
             shares NUMBER NOT NULL, price FLOAT, date TEXT, user_id INTEGER NOT NULL, 
-            sellprice FLOAT, selldate TEXT, name TEXT NOT NULL,
+            name TEXT NOT NULL,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)""")
 conn.commit()
 
-# "date" is both buydate and the ref_date for selling. 
+# "date" is buydate 
 # "price" is the buyprice
-# "sellprice" and "selldate" is null in a buy transaction &  "price" is null in a sell transaction
-# "shares" is positive for buy transaction & negative for sell transaction.
+# "shares" is always positive and represents the no of holding shares.
+
 
 # Custom filter for parsing dates
 @app.template_filter('strptime')
 def strptime_filter(date_string, format="%d-%m-%Y"):
     return datetime.strptime(date_string, format)
 
-@app.route("/sell")
+
+
+@app.route("/sell", methods=["POST","GET"])
 @login_required
 def sell():
 
     user_id = session["user_id"]
-    cur.execute("SELECT symbol, name, SUM(shares) AS shares FROM holdings WHERE user_id=? GROUP BY symbol",(user_id,))
-    owned_stocks = cur.fetchall()
-    return render_template("sell.html", owned_stocks=owned_stocks)
+    if request.method=="GET":
+        
+        cur.execute("SELECT symbol, name, SUM(shares) AS shares FROM holdings WHERE user_id=? GROUP BY symbol",(user_id,))
+        owned_stocks = cur.fetchall()
+        return render_template("sell.html", owned_stocks=owned_stocks)
+
+    data = request.get_json()
+
+    symbol = data["symbol"]
+    name = data["name"]
+    selldate = data["sellDate"]
+    selldate_object = datetime.strptime(selldate, "%Y-%m-%d")
+    selldate = selldate_object.strftime("%d-%m-%Y")
+
+    sellprice = data["sellPrice"]
+    shares = data["shares"]
 
 
+    print("selldate is ",selldate)
 
+    cur.execute("""SELECT id,shares FROM holdings 
+                    WHERE user_id = ? AND symbol = ?
+                    ORDER BY substr(date, 7, 4) || '-' || substr(date, 4, 2) || '-' || substr(date, 1, 2);""",(user_id, symbol))
+    id_shares = cur.fetchall()
 
+    balance = shares
+    for id_share in id_shares:
+        if balance==0:
+            break
 
+        if id_share["shares"]>=balance:
+            cur.execute("UPDATE holdings SET shares=? WHERE id=?",(id_share["shares"]-balance,id_share["id"]))
+            break
+        
+        else:
+            cur.execute("UPDATE holdings SET shares=? WHERE id=?",(0,id_share["id"]))
+            balance = balance - id_share["shares"]
+
+    cur.execute("DELETE FROM holdings WHERE shares=0")
+    conn.commit()
+
+    return jsonify({}),200
 
 
 @app.route("/search/<query>/")
@@ -76,15 +112,25 @@ def search(query):
 def index():
     
     user_id = session["user_id"]
-    cur.execute("""SELECT symbol, SUM(price*shares)*1.0/SUM(shares) AS price, SUM(shares) AS shares, date 
-                FROM holdings WHERE user_id = ? GROUP BY symbol""",(user_id,))
+    cur.execute("""SELECT symbol,
+                SUM(price*shares)*1.0/SUM(shares) AS price,
+                SUM(shares) AS shares,
+                date 
+                FROM holdings WHERE user_id = ? 
+                AND shares > 0
+                GROUP BY symbol""",(user_id,))
+    
     hdata = cur.fetchall()
     
     today = datetime.today().strftime("%d-%m-%Y")
 
-    #tdata is just used for CAGR calculation in index.html / Also used in xirr calculation
+    #tdata is just used for CAGR calculation in index.html / Also used in xirr calculation / for transac table mainly
     #AVG and SUM and GROUP By used to acc for same day purchase of same stock 
-    cur.execute("SELECT symbol, AVG(price) as price, SUM(shares) AS shares, date FROM holdings WHERE user_id=? GROUP BY symbol,date",(user_id,))
+    cur.execute("""SELECT symbol, 
+                price,
+                shares,
+                date FROM holdings
+                WHERE user_id=?""",(user_id,))
     tdata = cur.fetchall()
 
     xirr = calc_xirr(tdata)

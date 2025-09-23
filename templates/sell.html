@@ -402,7 +402,7 @@
                         <dt class="col-sm-3 animate__animated animate__fadeInUp">Symbol</dt>
                         <dd class="col-sm-9 animate__animated animate__fadeInUp">${data.symbol}</dd>
                         <dt class="col-sm-3 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">Name</dt>
-                        <dd class="col-sm-9 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">${data.name || stockName}</dd>
+                        <dd class="col-sm-9 animate__animated animate__fadeInUp" id="name_of_stock" style="animation-delay: 0.1s;">${data.name || stockName}</dd>
                         <dt class="col-sm-3 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">Exchange</dt>
                         <dd class="col-sm-9 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">${data.exchange}</dd>
                         <dt class="col-sm-3 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">Market Price</dt>
@@ -435,6 +435,7 @@
             const sellDate = sellDateInput.value;
             const ownedShares = parseInt(document.getElementById('shares-owned').textContent);
             const symbol = stockSymbolSelect.value.trim().toUpperCase();
+            const name = document.getElementById("name_of_stock").innerText;
 
             if (!sellPrice || sellPrice < 0) {
                 sellErrorMessage.textContent = 'Please enter a valid sell price';
@@ -474,7 +475,8 @@
                         symbol,
                         sellPrice,
                         shares,
-                        sellDate
+                        sellDate,
+                        name
                     })
                 });
 
