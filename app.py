@@ -29,6 +29,12 @@ cur.execute("""CREATE TABLE IF NOT EXISTS holdings (id INTEGER PRIMARY KEY NOT N
             shares NUMBER NOT NULL, price FLOAT, date TEXT, user_id INTEGER NOT NULL, 
             name TEXT NOT NULL,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)""")
+
+cur.execute("""CREATE TABLE IF NOT EXISTS history (id INTEGER PRIMARY KEY NOT NULL, symbol TEXT NOT NULL,
+            shares NUMBER NOT NULL, price FLOAT, date TEXT, user_id INTEGER NOT NULL, 
+            name TEXT NOT NULL, ref_buy_date TEXT, type TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)""")
+
 conn.commit()
 
 # "date" is buydate 
@@ -41,6 +47,15 @@ conn.commit()
 def strptime_filter(date_string, format="%d-%m-%Y"):
     return datetime.strptime(date_string, format)
 
+
+@app.route("/history")
+@login_required
+def history():
+    user_id = session["user_id"]
+    cur.execute("SELECT * FROM history WHERE user_id = ?", (user_id,))
+    transactions = cur.fetchall()
+
+    return render_template("history.html",transactions=transactions)
 
 
 @app.route("/sell", methods=["POST","GET"])
@@ -68,28 +83,36 @@ def sell():
 
     print("selldate is ",selldate)
 
-    cur.execute("""SELECT id,shares FROM holdings 
+    cur.execute("""SELECT id,shares,date FROM holdings 
                     WHERE user_id = ? AND symbol = ?
                     ORDER BY substr(date, 7, 4) || '-' || substr(date, 4, 2) || '-' || substr(date, 1, 2);""",(user_id, symbol))
     id_shares = cur.fetchall()
 
+
+    ref_buy_date = ""
     balance = shares
     for id_share in id_shares:
         if balance==0:
             break
 
+        ref_buy_date = ref_buy_date + id_share["date"]
         if id_share["shares"]>=balance:
             cur.execute("UPDATE holdings SET shares=? WHERE id=?",(id_share["shares"]-balance,id_share["id"]))
+            ref_buy_date = ref_buy_date + f"({balance})"
             break
         
         else:
             cur.execute("UPDATE holdings SET shares=? WHERE id=?",(0,id_share["id"]))
             balance = balance - id_share["shares"]
+            ref_buy_date = ref_buy_date + f"({id_share["shares"]}) /"
 
     cur.execute("DELETE FROM holdings WHERE shares=0")
+    cur.execute("INSERT INTO history (symbol,shares,price,date,user_id,name,type,ref_buy_date) VALUES (?,?,?,?,?,?,?,?)",(symbol,shares,sellprice,selldate,user_id,name,"sell",ref_buy_date))
+
     conn.commit()
 
     return jsonify({}),200
+
 
 
 @app.route("/search/<query>/")
@@ -130,7 +153,9 @@ def index():
                 price,
                 shares,
                 date FROM holdings
-                WHERE user_id=?""",(user_id,))
+                WHERE user_id=?
+                ORDER BY substr(date, 7, 4) || '-' || substr(date, 4, 2) || '-' || substr(date, 1, 2) DESC;
+                """,(user_id,))
     tdata = cur.fetchall()
 
     xirr = calc_xirr(tdata)
@@ -189,6 +214,8 @@ def buy():
     user_id = session["user_id"]
 
     cur.execute("INSERT INTO holdings (symbol,shares,price,date,user_id,name) VALUES (?,?,?,?,?,?)",(symbol,shares,price,buydate,user_id,name))
+    cur.execute("INSERT INTO history (symbol,shares,price,date,user_id,name,type) VALUES (?,?,?,?,?,?,?)",(symbol,shares,price,buydate,user_id,name,"buy"))
+
     conn.commit()
 
     return jsonify({}),200
