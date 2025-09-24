@@ -152,14 +152,34 @@
             background-color: rgba(66, 153, 225, 0.2);
         }
 
-        @media (min-width: 576px) {
-            .stock-details dl.row dt {
-                text-align: right;
-                border-radius: 4px 0 0 4px;
-            }
-            .stock-details dl.row dd {
-                border-left: none;
-            }
+        .accordion-item {
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            background-color: white;
+            width: auto;
+        }
+
+        .accordion-button {
+            background-color: white !important;
+            border-radius: 10px !important;
+            color: var(--text-color) !important;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: var(--secondary-color) !important;
+            color: white !important;
+        }
+
+        .profit-positive {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        .profit-negative {
+            color: var(--negative-color);
+            font-weight: 500;
         }
 
         .label-small {
@@ -199,6 +219,16 @@
             left: 10px;
             top: 50%;
             transform: translateY(-50%);
+        }
+
+        @media (min-width: 576px) {
+            .stock-details dl.row dt {
+                text-align: right;
+                border-radius: 4px 0 0 4px;
+            }
+            .stock-details dl.row dd {
+                border-left: none;
+            }
         }
 
         @media (max-width: 768px) {
@@ -255,6 +285,27 @@
                 font-size: 0.85rem;
                 padding: 5px;
             }
+
+            .accordion-button:not(.collapsed) {
+                max-width: 100vw;
+                padding: 10px;
+            }
+
+            .accordion-button .row .col {
+                flex-basis: 50%;
+                max-width: 50%;
+                margin-bottom: 5px;
+            }
+
+            .accordion {
+                max-width: 100vw;
+            }
+
+            .accordion-body {
+                padding: 10px;
+                max-width: 100vw;
+                width: 100%;
+            }
         }
 
         /* Additional styles for colorful results */
@@ -302,44 +353,66 @@
 
     <div id="main" class="animate__animated animate__fadeIn">
         <h1>Transaction History</h1>
-        <div class="card animate__animated animate__fadeIn">
+        
             {% if transactions %}
-                <table class="table table-hover table-bordered table-colorful">
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th>Symbol</th>
-                            <th>Name</th>
-                            <th>Shares</th>
-                            <th>Price</th>
-                            <th>Date</th>
-                            <th>Reference Buy Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for transaction in transactions %}
-                            <tr class="animate__animated animate__fadeInUp" style="animation-delay: {{ loop.index * 0.1 }}s;">
-                                <td style='color :{{"green" if transaction.type=="buy" else "red"}}'>{{ transaction.type | capitalize }}</td>
-                                <td>{{ transaction.symbol }}</td>
-                                <td>{{ transaction.name }}</td>
-                                <td>{{ transaction.shares }}</td>
-                                <td>{{ transaction.price }}</td>
-                                <td>{{ transaction.date }}</td>
-                                <td>
-                                    {% if transaction.type == 'sell' %}
-                                        {{ transaction.ref_buy_date }}
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="accordion" id="accordionTransactions">
+                    {% for transaction in transactions %}
+                        {% set item_id = loop.index %}
+                        <div class="accordion-item animate__animated animate__fadeInUp" style="animation-delay: {{ loop.index * 0.1 }}s;">
+                            <h2 class="accordion-header" id="heading{{item_id}}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{item_id}}" aria-expanded="false" aria-controls="collapse{{item_id}}">
+                                    <div class="row w-100">
+                                        <div class="col">
+                                            <small class="label-small d-block">Type</small>
+                                            <span style='color :{{"green" if transaction.type=="buy" else "red"}}'>{{ transaction.type | capitalize }}</span>
+                                        </div>
+                                        <div class="col">
+                                            <small class="label-small d-block">Name</small>
+                                            {{ transaction.name }}
+                                        </div>
+                                        <div class="col">
+                                            <small class="label-small d-block">Shares</small>
+                                            {{ transaction.shares }}
+                                        </div>
+                                        <div class="col">
+                                            <small class="label-small d-block">Symbol</small>
+                                            {{ transaction.symbol }}
+                                        </div>
+                                        <div class="col">
+                                            <small class="label-small d-block">Price</small>
+                                            {{ transaction.price }}
+                                        </div>
+                                        <div class="col">
+                                            <small class="label-small d-block">Date</small>
+                                            {{ transaction.date }}
+                                        </div>                                 
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse{{item_id}}" class="accordion-collapse collapse" aria-labelledby="heading{{item_id}}" data-bs-parent="#accordionTransactions">
+                                <div class="accordion-body">
+                                    <div class="animate__animated animate__fadeIn">
+                                        <dl class="row">
+                                            
+                                            <dt class="col-sm-4">Reference Buy Date</dt>
+                                            <dd class="col-sm-8">
+                                                {% if transaction.type == 'sell' %}
+                                                    {{ transaction.ref_buy_date }}
+                                                {% else %}
+                                                    Not Applicable
+                                                {% endif %}
+                                            </dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
             {% else %}
                 <p class="text-muted animate__animated animate__fadeIn">No transactions found.</p>
             {% endif %}
-        </div>
+        
     </div>
 
     <script>

@@ -52,7 +52,8 @@ def strptime_filter(date_string, format="%d-%m-%Y"):
 @login_required
 def history():
     user_id = session["user_id"]
-    cur.execute("SELECT * FROM history WHERE user_id = ?", (user_id,))
+    cur.execute("""SELECT * FROM history WHERE user_id = ? 
+                ORDER BY substr(date, 7, 4) || '-' || substr(date, 4, 2) || '-' || substr(date, 1, 2) DESC;""", (user_id,))
     transactions = cur.fetchall()
 
     return render_template("history.html",transactions=transactions)
@@ -98,13 +99,13 @@ def sell():
         ref_buy_date = ref_buy_date + id_share["date"]
         if id_share["shares"]>=balance:
             cur.execute("UPDATE holdings SET shares=? WHERE id=?",(id_share["shares"]-balance,id_share["id"]))
-            ref_buy_date = ref_buy_date + f"({balance})"
+            ref_buy_date = ref_buy_date + f"({balance} shares)"
             break
         
         else:
             cur.execute("UPDATE holdings SET shares=? WHERE id=?",(0,id_share["id"]))
             balance = balance - id_share["shares"]
-            ref_buy_date = ref_buy_date + f"({id_share["shares"]}) /"
+            ref_buy_date = ref_buy_date + f"({id_share["shares"]} shares) / "
 
     cur.execute("DELETE FROM holdings WHERE shares=0")
     cur.execute("INSERT INTO history (symbol,shares,price,date,user_id,name,type,ref_buy_date) VALUES (?,?,?,?,?,?,?,?)",(symbol,shares,sellprice,selldate,user_id,name,"sell",ref_buy_date))
