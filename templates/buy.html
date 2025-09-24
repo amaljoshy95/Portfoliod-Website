@@ -545,47 +545,32 @@
                     return;
                 }
 
-                // Create table
-                const table = document.createElement('table');
-                table.className = 'table table-hover table-bordered table-colorful';
-
-                // Table header
-                const thead = document.createElement('thead');
-                thead.innerHTML = `
-                    <tr>
-                        <th>Long Name</th>
-                        <th>Symbol</th>
-                        <th>Exchange</th>
-                        <th>Quote Type</th>
-                    </tr>
-                `;
-                table.appendChild(thead);
-
-                // Table body
-                const tbody = document.createElement('tbody');
-                quotes.forEach(quote => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${quote.longname || quote.shortname || '-'}</td>
-                        <td>${quote.symbol || '-'}</td>
-                        <td>${quote.exchange || '-'}</td>
-                        <td>${quote.quoteType || '-'}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-                table.appendChild(tbody);
-
-                // Replace results with table
+                // Clear previous results
                 const results = document.getElementById('results');
                 results.innerHTML = '';
-                results.appendChild(table);
 
-                // Make rows clickable to populate stock symbol input and hide search container
-                const rows = tbody.querySelectorAll('tr');
-                rows.forEach(row => {
-                    row.style.cursor = 'pointer';
-                    row.addEventListener('click', () => {
-                        const symbol = row.querySelector('td:nth-child(2)').textContent;
+                // Create cards for each quote
+                quotes.forEach(quote => {
+                    const card = document.createElement('div');
+                    card.className = 'card mb-3';
+                    card.style.cursor = 'pointer';
+                    card.innerHTML = `
+                        <div class="card-header">
+                            ${quote.longname || quote.shortname || '-'} (${quote.symbol || '-'})
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4"><strong>Symbol:</strong> ${quote.symbol || '-'}</div>
+                                <div class="col-md-4"><strong>Exchange:</strong> ${quote.exchange || '-'}</div>
+                                <div class="col-md-4"><strong>Quote Type:</strong> ${quote.quoteType || '-'}</div>
+                            </div>
+                        </div>
+                    `;
+                    results.appendChild(card);
+
+                    // Make card clickable to populate stock symbol input and hide search container
+                    card.addEventListener('click', () => {
+                        const symbol = quote.symbol || '-';
                         document.getElementById('stock-symbol').value = symbol;
                         document.getElementById('search-container').style.display = 'none';
                         // Optionally clear the search input and results for next time
