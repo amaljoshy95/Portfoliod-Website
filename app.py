@@ -48,6 +48,8 @@ def strptime_filter(date_string, format="%d-%m-%Y"):
     return datetime.strptime(date_string, format)
 
 
+
+
 @app.route("/history")
 @login_required
 def history():
@@ -57,6 +59,9 @@ def history():
     transactions = cur.fetchall()
 
     return render_template("history.html",transactions=transactions)
+
+
+
 
 
 @app.route("/sell", methods=["POST","GET"])
@@ -84,7 +89,7 @@ def sell():
 
     print("selldate is ",selldate)
 
-    cur.execute("""SELECT id,shares,date FROM holdings 
+    cur.execute("""SELECT id,price,shares,date FROM holdings 
                     WHERE user_id = ? AND symbol = ?
                     ORDER BY substr(date, 7, 4) || '-' || substr(date, 4, 2) || '-' || substr(date, 1, 2);""",(user_id, symbol))
     id_shares = cur.fetchall()
@@ -99,13 +104,18 @@ def sell():
         ref_buy_date = ref_buy_date + id_share["date"]
         if id_share["shares"]>=balance:
             cur.execute("UPDATE holdings SET shares=? WHERE id=?",(id_share["shares"]-balance,id_share["id"]))
-            ref_buy_date = ref_buy_date + f"({balance} shares)"
+            profit = round((sellprice - id_share["price"])*balance,1)
+            ref_buy_date = ref_buy_date + f" {id_share["price"]} {balance} {profit} {round(profit*100/(id_share["price"]*balance),1)} cagr"
             break
         
         else:
             cur.execute("UPDATE holdings SET shares=? WHERE id=?",(0,id_share["id"]))
             balance = balance - id_share["shares"]
-            ref_buy_date = ref_buy_date + f"({id_share["shares"]} shares) / "
+            profit = round((sellprice - id_share["price"])*id_share["shares"],1)
+            ref_buy_date = ref_buy_date + f" {id_share["price"]} {id_share["shares"]} {profit} {round(profit*100/(id_share["price"]*id_share["shares"]),1)} cagr ,"
+
+
+
 
     cur.execute("DELETE FROM holdings WHERE shares=0")
     cur.execute("INSERT INTO history (symbol,shares,price,date,user_id,name,type,ref_buy_date) VALUES (?,?,?,?,?,?,?,?)",(symbol,shares,sellprice,selldate,user_id,name,"sell",ref_buy_date))

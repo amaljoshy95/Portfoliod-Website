@@ -389,23 +389,61 @@
                                     </div>
                                 </button>
                             </h2>
+
+
+                            {% if transaction.type=="sell" %}
                             <div id="collapse{{item_id}}" class="accordion-collapse collapse" aria-labelledby="heading{{item_id}}" data-bs-parent="#accordionTransactions">
                                 <div class="accordion-body">
                                     <div class="animate__animated animate__fadeIn">
-                                        <dl class="row">
-                                            
-                                            <dt class="col-sm-4">Reference Buy Date</dt>
-                                            <dd class="col-sm-8">
-                                                {% if transaction.type == 'sell' %}
-                                                    {{ transaction.ref_buy_date }}
-                                                {% else %}
-                                                    Not Applicable
-                                                {% endif %}
-                                            </dd>
-                                        </dl>
+                                                                                    
+                                        <div class="row w-100">
+                                            <div class="col">
+                                                <small class="label-small d-block">Ref Buy Date</small>
+                                            </div>
+                                            <div class="col">
+                                                <small class="label-small d-block">Buy Price</small>
+                                            </div>
+                                            <div class="col">
+                                                <small class="label-small d-block">No of shares</small>
+                                            </div>
+                                            <div class="col">
+                                                <small class="label-small d-block">Profit/Loss</small>
+                                            </div>
+                                            <div class="col">
+                                                <small class="label-small d-block">%</small>
+                                            </div>
+                                            <div class="col">
+                                                <small class="label-small d-block">CAGR</small>
+                                            </div>                                        
+                                        </div>
+
+                                        <!--Code for displaying tabular details of each transactinon-->
+                                        
+                                        {% set eachrows = transaction.ref_buy_date.split(",") %}
+                                        {% for eachrow in eachrows %}
+                                        <div class="row w-100">
+                                        {% set eachelements = eachrow.split() %}
+                                        {% for eachelement in eachelements %}                                     
+                                        
+                                            <div class="col">
+                                                {{eachelement}}
+                                           </div>
+                                        {% endfor %}
+                                        </div>
+                                        {% endfor %}
+                                           
+
+                                                                               
+
+
+
+
+
+                                        
                                     </div>
                                 </div>
                             </div>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
