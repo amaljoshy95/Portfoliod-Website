@@ -110,7 +110,24 @@ def calc_xirr(tdata):
     #print(result)
     return result
 
- 
+def year_diff(date1: str, date2: str) -> float:
+    # Parse the dates
+    d1 = datetime.strptime(date1, "%d-%m-%Y")
+    d2 = datetime.strptime(date2, "%d-%m-%Y")
+    
+    # Ensure d1 <= d2
+    if d1 > d2:
+        return 0
+    
+    # Difference in days
+    diff_days = (d2 - d1).days
+    
+    # Convert to years (using average year length)
+    diff_years = diff_days / 365.2425  
+    
+    return diff_years
+
+
 
 if __name__ == "__main__":
 

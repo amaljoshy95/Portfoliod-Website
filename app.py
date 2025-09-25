@@ -2,7 +2,7 @@ from flask import Flask,send_file,render_template,redirect,request,session,url_f
 from werkzeug.security import generate_password_hash,check_password_hash
 from dotenv import load_dotenv
 from os import getenv
-from helpers import login_required,calc_xirr
+from helpers import login_required,calc_xirr,year_diff
 from datetime import date,datetime
 from get_stock_data import get_stock_data
 import requests
@@ -105,14 +105,18 @@ def sell():
         if id_share["shares"]>=balance:
             cur.execute("UPDATE holdings SET shares=? WHERE id=?",(id_share["shares"]-balance,id_share["id"]))
             profit = round((sellprice - id_share["price"])*balance,1)
-            ref_buy_date = ref_buy_date + f" {id_share["price"]} {balance} {profit} {round(profit*100/(id_share["price"]*balance),1)} cagr"
+            years = year_diff(id_share["date"],selldate)
+            cagr = round((((sellprice/id_share["price"])**(1/years))-1)*100,1) if years!=0 else "NA"
+            ref_buy_date = ref_buy_date + f" {id_share["price"]} {balance} {profit} {round(profit*100/(id_share["price"]*balance),1)} {cagr}"
             break
         
         else:
             cur.execute("UPDATE holdings SET shares=? WHERE id=?",(0,id_share["id"]))
             balance = balance - id_share["shares"]
             profit = round((sellprice - id_share["price"])*id_share["shares"],1)
-            ref_buy_date = ref_buy_date + f" {id_share["price"]} {id_share["shares"]} {profit} {round(profit*100/(id_share["price"]*id_share["shares"]),1)} cagr ,"
+            years = year_diff(id_share["date"],selldate)
+            cagr = round((((sellprice/id_share["price"])**(1/years))-1)*100,1) if years!=0 else "NA"
+            ref_buy_date = ref_buy_date + f" {id_share["price"]} {id_share["shares"]} {profit} {round(profit*100/(id_share["price"]*id_share["shares"]),1)} {cagr} ,"
 
 
 

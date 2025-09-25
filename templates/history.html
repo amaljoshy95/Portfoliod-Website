@@ -221,6 +221,10 @@
             transform: translateY(-50%);
         }
 
+        .accordion-button.no-arrow::after{
+        display: none !important
+        }
+
         @media (min-width: 576px) {
             .stock-details dl.row dt {
                 text-align: right;
@@ -306,6 +310,56 @@
                 max-width: 100vw;
                 width: 100%;
             }
+            
+        .transaction-table-container {
+            width: 100%;
+            max-width: 100vw;
+        }
+
+        .transaction-table {
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        .transaction-table th,
+        .transaction-table td {
+            padding: 2px 1px;
+            font-size: clamp(0.5rem, 1.7vw, 0.65rem); /* Dynamic font size, slightly adjusted */
+            border: 1px solid #e5e7eb;
+            white-space: nowrap; /* Enforce single line */
+            overflow: visible;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+            vertical-align: middle;
+        }
+
+        .transaction-table th {
+            font-size: clamp(0.45rem, 1.5vw, 0.6rem); /* Slightly smaller for headers */
+            background-color: #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            padding: 2px 1px;
+        }
+
+        /* Adjusted column widths for mobile */
+        .transaction-table th:nth-child(1),
+        .transaction-table td:nth-child(1) { width: 21%; } /* REF buy Date */
+        .transaction-table th:nth-child(2),
+        .transaction-table td:nth-child(2) { width: 17%; } /* BUy price */
+        .transaction-table th:nth-child(3),
+        .transaction-table td:nth-child(3) { width: 15%; } /* Shares */
+        .transaction-table th:nth-child(4),
+        .transaction-table td:nth-child(4) { width: 20%; } /* PNL */
+        .transaction-table th:nth-child(5),
+        .transaction-table td:nth-child(5) { width: 15%; } /* % */
+        .transaction-table th:nth-child(6),
+        .transaction-table td:nth-child(6) { width: 14%; } /* CAGR */
+
+
+
+
+
         }
 
         /* Additional styles for colorful results */
@@ -322,6 +376,60 @@
         .table-colorful tbody tr:hover {
             background-color: #fff3e0; /* light orange */
         }
+
+        
+    .transaction-table-container {
+        width: 100%;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+    }
+
+    .transaction-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #f9fafb;
+        border-radius: 8px;
+        table-layout: fixed; /* Ensure columns resize proportionally */
+    }
+
+    .transaction-table th,
+    .transaction-table td {
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #e5e7eb;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .transaction-table th {
+        font-weight: 500;
+        color: var(--text-color);
+        background-color: #e5e7eb;
+        border-radius: 4px;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .transaction-table tr:hover td {
+        background-color: #edf2f7;
+        transform: scale(1.02);
+        transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
     </style>
     <!-- Bootstrap JS and Popper.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
@@ -358,9 +466,9 @@
                 <div class="accordion" id="accordionTransactions">
                     {% for transaction in transactions %}
                         {% set item_id = loop.index %}
-                        <div class="accordion-item animate__animated animate__fadeInUp" style="animation-delay: {{ loop.index * 0.1 }}s;">
+                        <div class="accordion-item animate__animated animate__fadeInUp " style="animation-delay: {{ loop.index * 0.1 }}s;">
                             <h2 class="accordion-header" id="heading{{item_id}}">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{item_id}}" aria-expanded="false" aria-controls="collapse{{item_id}}">
+                                <button class="accordion-button collapsed {{ 'no-arrow' if transaction.type=='buy' else '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{item_id}}" aria-expanded="false" aria-controls="collapse{{item_id}}">
                                     <div class="row w-100">
                                         <div class="col">
                                             <small class="label-small d-block">Type</small>
@@ -396,41 +504,40 @@
                                 <div class="accordion-body">
                                     <div class="animate__animated animate__fadeIn">
                                                                                     
-                                        <div class="row w-100">
-                                            <div class="col">
-                                                <small class="label-small d-block">Ref Buy Date</small>
-                                            </div>
-                                            <div class="col">
-                                                <small class="label-small d-block">Buy Price</small>
-                                            </div>
-                                            <div class="col">
-                                                <small class="label-small d-block">No of shares</small>
-                                            </div>
-                                            <div class="col">
-                                                <small class="label-small d-block">Profit/Loss</small>
-                                            </div>
-                                            <div class="col">
-                                                <small class="label-small d-block">%</small>
-                                            </div>
-                                            <div class="col">
-                                                <small class="label-small d-block">CAGR</small>
-                                            </div>                                        
-                                        </div>
+                                        
 
-                                        <!--Code for displaying tabular details of each transactinon-->
-                                        
-                                        {% set eachrows = transaction.ref_buy_date.split(",") %}
-                                        {% for eachrow in eachrows %}
-                                        <div class="row w-100">
+                                <!--Code for displaying tabular details of each transactinon-->
+                                <div class="transaction-table-container">
+                                <table class="transaction-table animate__animated animate__fadeInUp">
+                                    <thead>
+                                        <tr>
+                                            <th>Ref Buy Date</th>
+                                            <th>Buy Price</th>
+                                            <th>Shares</th>
+                                            <th>P/L</th>
+                                            <th>%</th>
+                                            <th>CAGR</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                    
+                                    {% set eachrows = transaction.ref_buy_date.split(",") %}
+                                    {% for eachrow in eachrows %}
+
+                                    <tr>
                                         {% set eachelements = eachrow.split() %}
-                                        {% for eachelement in eachelements %}                                     
-                                        
-                                            <div class="col">
-                                                {{eachelement}}
-                                           </div>
+                                        {% for eachelement in eachelements %}
+                                        <td>{{eachelement}}</td>
                                         {% endfor %}
-                                        </div>
-                                        {% endfor %}
+
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                    
+                                </table>
+                                </div>
+                             
                                            
 
                                                                                
