@@ -1,6 +1,6 @@
-# Portfoliod
+# Portfolioid
 
-Portfoliod is a web application designed for users in India to track their mutual fund and equity investments through a paper trading platform. It allows users to simulate buying and selling stocks, maintain a history of transactions, and visualize their investment performance through charts.
+Portfolioid is a web application designed for users in India to track their mutual fund and equity investments through a paper trading platform. It allows users to simulate buying and selling stocks, maintain a history of transactions, and visualize their investment performance through charts.
 
 ## Features
 
@@ -27,8 +27,8 @@ Portfoliod is a web application designed for users in India to track their mutua
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/portfoliod.git
-   cd portfoliod
+   git clone https://github.com/your-username/portfolioid.git
+   cd portfolioid
    ```
 
 2. **Set Up a Virtual Environment**:
