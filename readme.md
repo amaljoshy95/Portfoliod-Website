@@ -39,7 +39,7 @@ Portfoliod is a web application designed for users in India to track their mutua
 
 3. **Install Dependencies**:
    ```bash
-   pip install flask werkzeug python-dotenv requests
+   pip install -r requirements.txt
    ```
 
 4. **Set Up Environment Variables**:
@@ -56,6 +56,13 @@ Portfoliod is a web application designed for users in India to track their mutua
    python app.py
    ```
    The app will run on `http://0.0.0.0:5000` in debug mode.
+
+   OR
+
+   ```bash
+   flask run
+   ```
+   The app will run on `localhost:5000` 
 
 ## Usage
 
@@ -92,6 +99,19 @@ Portfoliod is a web application designed for users in India to track their mutua
 - **year_diff**: Computes the time difference between two dates for CAGR calculations.
 - **get_stock_data**: Fetches stock data from external APIs (implementation in `get_stock_data.py`).
 - **strptime_filter**: Custom Jinja2 filter for parsing dates in templates.
+
+## Project Structure
+```bash
+portfolioid/
+│── app.py                 # Main Flask app
+│── helpers.py             # Utility functions (login_required, XIRR, CAGR, etc.)
+│── get_stock_data.py      # Fetch stock/mutual fund data
+│── users.db               # SQLite database (auto-created)
+│── templates/             # HTML templates (login, signup, index, history, buy, sell)
+│── static/                # Static assets (CSS, JS)
+│── .env                   # Environment variables
+│── requirements.txt       # Python dependencies
+```
 
 ## Notes
 
