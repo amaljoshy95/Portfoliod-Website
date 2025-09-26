@@ -6,6 +6,7 @@ from os import getenv
 
 load_dotenv()
 
+
 def login_required(func):
     @functools.wraps(func)
     def wrapper(*args,**kwargs):
@@ -14,7 +15,15 @@ def login_required(func):
         return func(*args,**kwargs)
     return wrapper
             
+def admin_required(func):
 
+    @functools.wraps(func)
+    def wrapper(*args,**kwargs):
+        if not "user_id" in session or session["user_id"]!=1:    #the first user of the db file is set as the admin
+                print("user is",session["user_id"])
+                return render_template("login.html")
+        return func(*args,**kwargs)
+    return wrapper
 ##########################################################################################
 from get_stock_data import get_stock_data
 from scipy.optimize import newton

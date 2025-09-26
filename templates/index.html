@@ -360,13 +360,14 @@
     </div>
 
     <header id="header">
-        <h2><a href="/" class="text-white text-decoration-none animate__animated animate__bounce animate__slow">p<span class="animate__animated animate__tada animate__infinite animate__slow">◉</span>rtf<span class="animate__animated animate__tada animate__infinite animate__slow">◉</span>li<span class="animate__animated animate__tada animate__infinite animate__slow">◉</span>id</a></h2>
+        <h2><a href="/" class="text-white text-decoration-none animate__animated animate__bounce animate__infinite animate__slow">p<span class="animate__animated animate__tada animate__infinite animate__slow">◉</span>rtf<span class="animate__animated animate__tada animate__infinite animate__slow">◉</span>li<span class="animate__animated animate__tada animate__infinite animate__slow">◉</span>id</a></h2>
     </header>
 
+    
     <!--Heading-->
     <div id="main" class="animate__animated animate__fadeIn">
-        <h5>EQUITY</h5>
-
+        <h5>DashBoard Equity/Mutual Fund</h5>
+    {% if hdata %}
         <!--Accordion starts-->
         <div class="accordion" id="accordionPortfolio">
             <!--Loop for each item-->
@@ -526,6 +527,12 @@
             {% endfor %}
         </div>
     </div>
+
+    {% else %}
+        <div class="alert alert-info text-center shadow-sm rounded-3 animate__animated animate__fadeInUp" role="alert">
+            💡Welcome!! Add your portfolio using <strong>Buy</strong>
+        </div>
+    {% endif %}
 
     <div id="bottom-nav">
         <a href="/" class="animate__animated animate__pulse animate__infinite animate__slow"><i class="fa fa-bar-chart"></i><span style="color:yellow">Dashboard</span></a>

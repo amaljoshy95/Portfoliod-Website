@@ -2,18 +2,23 @@ from flask import Flask,send_file,render_template,redirect,request,session,url_f
 from werkzeug.security import generate_password_hash,check_password_hash
 from dotenv import load_dotenv
 from os import getenv
-from helpers import login_required,calc_xirr,year_diff
+from helpers import login_required,calc_xirr,year_diff,admin_required
 from datetime import date,datetime
 from get_stock_data import get_stock_data
 import requests
+import os
+
+# Path to your SQLite DB file
+DB_PATH = "users.db"
 
 load_dotenv()
 Flask.secret_key = getenv("FLASK_SECRET_KEY")
 
+
 app = Flask(__name__)
 
 import sqlite3
-conn = sqlite3.connect("users.db",check_same_thread=False)
+conn = sqlite3.connect(DB_PATH,check_same_thread=False)
 
 # Make the fetchall() returns list of dict like row elements instead of list of tuples.
 conn.row_factory = sqlite3.Row 
@@ -305,6 +310,46 @@ def signup():
 
     return redirect("/")
 
+
+
+
+# 🔹 Download the current DB file
+@app.route("/download-db-file")
+@admin_required
+def download_db_file():
+    if not os.path.exists(DB_PATH):
+        return "Database file not found.", 404
+    return send_file(DB_PATH, as_attachment=True)
+
+
+
+# 🔹 Upload a new DB file (replace existing one)
+@app.route("/upload-db-file", methods=["GET", "POST"])
+@admin_required
+def upload_db_file():
+    if request.method == "GET":
+        # Show upload form
+        return """
+        <h3>Upload a new DB file</h3>
+        <form method='post' action='/upload-db-file' enctype='multipart/form-data'>
+            <input type='file' name='file'>
+            <input type='submit' value='Upload'>
+        </form>
+        """
+    elif request.method == "POST":
+        if "file" not in request.files:
+            return "No file uploaded", 400
+
+        file = request.files["file"]
+        if file.filename == "":
+            return "No file selected", 400
+
+        # Only allow .db files for safety
+        if not file.filename.endswith(".db"):
+            return "Invalid file type. Must be a .db file", 400
+
+        file.save(DB_PATH)
+        return f"✅ Database file replaced successfully as {DB_PATH}"
 
 
 if __name__ == "__main__":
