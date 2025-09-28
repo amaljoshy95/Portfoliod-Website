@@ -40,22 +40,37 @@ def get_stock_data(symbol, viewrange="1mo", interval="1d"):
 
     except:
         try:
-            bse_symbol = symbol+".BO"
-            url = f"https://query1.finance.yahoo.com/v7/finance/spark?includePrePost=true&includeTimestamps=true&indicators=close&interval={interval}&range={viewrange}&symbols={bse_symbol}&lang=en-US&region=US"
-            #print(url)
-            headers = {"User-Agent": "Mozilla/5.0"}
-            response = requests.get(url, headers=headers)
-            response.raise_for_status()
-            data = response.json()
-        
+            try:
+                bse_symbol = symbol+".BO"
+                url = f"https://query1.finance.yahoo.com/v7/finance/spark?includePrePost=true&includeTimestamps=true&indicators=close&interval={interval}&range={viewrange}&symbols={bse_symbol}&lang=en-US&region=US"
+                #print(url)
+                headers = {"User-Agent": "Mozilla/5.0"}
+                response = requests.get(url, headers=headers)
+                response.raise_for_status()
+                data = response.json()
+            
+            except:
+                bse_symbol = symbol+".NS"
+                url = f"https://query1.finance.yahoo.com/v7/finance/spark?includePrePost=true&includeTimestamps=true&indicators=close&interval={interval}&range={viewrange}&symbols={bse_symbol}&lang=en-US&region=US"
+                #print(url)
+                headers = {"User-Agent": "Mozilla/5.0"}
+                response = requests.get(url, headers=headers)
+                response.raise_for_status()
+                data = response.json()
+
         except:
-            bse_symbol = symbol+".NS"
-            url = f"https://query1.finance.yahoo.com/v7/finance/spark?includePrePost=true&includeTimestamps=true&indicators=close&interval={interval}&range={viewrange}&symbols={bse_symbol}&lang=en-US&region=US"
-            #print(url)
-            headers = {"User-Agent": "Mozilla/5.0"}
-            response = requests.get(url, headers=headers)
-            response.raise_for_status()
-            data = response.json()
+            
+            
+                #for global stocks
+                url = f"https://query1.finance.yahoo.com/v7/finance/spark?includePrePost=true&includeTimestamps=true&indicators=close&interval={interval}&range={viewrange}&symbols={symbol}&lang=en-US&region=US"
+                #print(url)
+                headers = {"User-Agent": "Mozilla/5.0"}
+                response = requests.get(url, headers=headers)
+                response.raise_for_status()
+                data = response.json()
+            
+           
+                
 
     # Extract the result object
     try:
