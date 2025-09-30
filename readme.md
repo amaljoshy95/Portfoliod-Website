@@ -1,6 +1,6 @@
 # Portfolioid
 
-Portfolioid is a web application designed for users in India to track their mutual fund and equity investments through a paper trading platform. It allows users to simulate buying and selling stocks, maintain a history of transactions, and visualize their investment performance through charts.
+Portfolioid is a web application designed for users to track their mutual fund and equity investments through a paper trading platform. It allows users to simulate buying and selling stocks, maintain a history of transactions, and visualize their investment performance through charts.
 
 ## Features
 
